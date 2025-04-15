@@ -6,6 +6,7 @@ body {
   background: #0a0a0a;
   color: #e0e0e0;
   overflow-x: hidden;
+  font-size: 16px; /* Базовый размер шрифта для body */
 }
 
 .app-container {
@@ -30,36 +31,40 @@ body {
 
 .header {
   display: flex;
-  justify-content: center; /* Центрируем содержимое */
-  align-items: flex-start; /* Выравниваем по верхнему краю */
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   margin-bottom: 40px;
-  position: relative; /* Для позиционирования кнопок */
+  position: relative;
   animation: glow 2s infinite alternate;
+  padding: 0 10px; /* Добавлен отступ */
+  box-sizing: border-box; /* Учитываем отступ в общей ширине */
 }
 
 .header-content {
   text-align: center;
-  flex-grow: 0; /* Заголовок не растягивается */
+  flex-grow: 0;
 }
 
 .header-content h1 {
-  font-size: 3em;
+  font-size: 2.5em; /* Меньше для мобильных */
   color: #00d4ff;
   text-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+  word-break: break-word; /* Перенос длинных слов */
 }
 
 .header-content p {
-  font-size: 1.3em;
+  font-size: 1.1em; /* Меньше для мобильных */
   color: #b0b0b0;
+  word-break: break-word; /* Перенос длинных слов */
 }
 
 .wallet-controls {
   position: absolute;
-  top: -10px; /* Выше */
-  right: -20px; /* Правее */
+  top: -10px;
+  right: -20px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -78,7 +83,7 @@ body {
   margin: 0;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 1em; /* Чуть меньше, чтобы было компактно */
+  font-size: 0.9em;
   width: 30px;
   height: 30px;
   display: flex;
@@ -94,12 +99,12 @@ body {
 }
 
 .wallet-button {
-  padding: 8px 18px; /* Компактнее, чтобы не выбиваться */
+  padding: 8px 18px;
   background: #00d4ff;
   border: none;
   border-radius: 8px;
   color: #0a0a0a;
-  font-size: 0.9em;
+  font-size: 0.8em;
   cursor: pointer;
   transition: all 0.3s;
   font-family: "Orbitron", sans-serif;
@@ -112,37 +117,40 @@ body {
 
 .wallet-address {
   color: #00d4ff;
-  font-size: 0.9em;
+  font-size: 0.8em;
   text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+  word-break: break-word; /* Перенос длинных слов */
 }
 
 .form-container {
   background: rgba(31, 31, 31, 0.9);
-  padding: 40px;
+  padding: 20px; /* Меньше отступы */
   border-radius: 15px;
   box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
   width: 100%;
   max-width: 550px;
   backdrop-filter: blur(5px);
+  box-sizing: border-box; /* Учитываем padding */
 }
 
 .form-container h2 {
   color: #00d4ff;
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px; /* Меньше отступ */
+  font-size: 1.5em; /* Меньше заголовок */
   text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
 select,
 input {
   width: 100%;
-  padding: 12px;
-  margin: 12px 0;
+  padding: 10px; /* Меньше отступы */
+  margin: 10px 0; /* Меньше отступы */
   border: 1px solid #00d4ff;
   border-radius: 8px;
   background: rgba(42, 42, 42, 0.8);
   color: #e0e0e0;
-  font-size: 1em;
+  font-size: 0.9em;
   transition: all 0.3s;
   box-sizing: border-box;
 }
@@ -162,7 +170,7 @@ select option {
   background: rgba(42, 42, 42, 0.8);
   color: #e0e0e0;
   font-family: "Orbitron", sans-serif;
-  min-width: 400px;
+  min-width: auto; /* Убираем фикс. ширину */
 }
 
 select:focus,
@@ -174,12 +182,12 @@ input:focus {
 
 button {
   width: 100%;
-  padding: 15px;
+  padding: 12px; /* Меньше отступы */
   background: #00d4ff;
   border: none;
   border-radius: 8px;
   color: #0a0a0a;
-  font-size: 1.2em;
+  font-size: 1em; /* Меньше размер */
   cursor: pointer;
   transition: all 0.3s;
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
@@ -192,10 +200,12 @@ button:hover {
 }
 
 .status {
-  margin-top: 20px;
+  margin-top: 15px; /* Меньше отступ */
   text-align: center;
   color: #00d4ff;
+  font-size: 0.9em; /* Меньше размер */
   animation: fadeIn 0.5s;
+  word-break: break-word; /* Перенос длинных слов */
 }
 
 .status.scanning {
@@ -220,9 +230,35 @@ button:hover {
 }
 
 footer {
-  margin-top: 30px;
+  margin-top: 20px; /* Меньше отступ */
   color: #b0b0b0;
-  font-size: 0.9em;
+  font-size: 0.8em; /* Меньше размер */
+  text-align: center; /* Центрируем текст */
+}
+
+/* Media Queries для совсем маленьких экранов */
+@media (max-width: 576px) {
+  .header {
+    padding: 0 5px; /* Еще меньше отступ */
+  }
+  .wallet-controls {
+    position: static; /* Убираем absolute позиционирование */
+    margin-top: 10px; /* Добавляем отступ сверху */
+    flex-direction: column; /* Кнопки в столбик */
+    align-items: center; /* Центрируем по горизонтали */
+  }
+  .language-buttons {
+    margin-bottom: 5px; /* Отступ между кнопками и кошельком */
+  }
+  .form-container {
+    padding: 15px; /* Еще меньше отступы */
+  }
+  .header-content h1 {
+    font-size: 2em; /* Еще меньше */
+  }
+  .header-content p {
+    font-size: 1em; /* Еще меньше */
+  }
 }
 
 @keyframes glow {

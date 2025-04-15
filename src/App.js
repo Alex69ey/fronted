@@ -14,7 +14,7 @@ const providerOptions = {
   walletconnect: {
     package: WalletConnectProvider,
     options: {
-      infuraId: "YOUR_INFURA_PROJECT_ID", // Замени на свой Infura ID
+      infuraId: "4c9e3f999a68423bab7c091b3ef5440c", // Замени на свой Infura ID
     },
   },
 };
@@ -59,6 +59,8 @@ function App() {
     { id: 9, name: "2 Months, 3 Pairs - 4500 USDT" },
     { id: 10, name: "2 Months, 4 Pairs - 5500 USDT" },
     { id: 11, name: "2 Months, 5 Pairs - 6000 USDT" },
+    { id: 12, name: "Сhange of strategy - 9 USDT" },
+    { id: 13, name: "Project support - 999 USDT" },
   ];
 
   const connectWallet = async () => {

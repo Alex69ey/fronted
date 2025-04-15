@@ -1,25 +1,90 @@
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap");
 
+/* Resetting default styles */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* General styles */
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
 body {
   margin: 0;
   font-family: "Orbitron", sans-serif;
   background: #0a0a0a;
   color: #e0e0e0;
   overflow-x: hidden;
-  font-size: 16px; /* Базовый размер шрифта для body */
+  font-size: 16px; /* Base font size */
+  line-height: 1.6; /* Improve readability */
 }
 
+/* App container */
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 20px;
+  padding: 15px; /* Reduced padding */
   position: relative;
   background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
 }
 
+/* Particles.js styles */
 #tsparticles {
   position: absolute;
   top: 0;
@@ -29,47 +94,48 @@ body {
   z-index: -1;
 }
 
+/* Header styles */
 .header {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column; /* Stack content vertically */
+  align-items: center; /* Center items horizontally */
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
-  margin-bottom: 40px;
-  position: relative;
-  animation: glow 2s infinite alternate;
-  padding: 0 10px; /* Добавлен отступ */
-  box-sizing: border-box; /* Учитываем отступ в общей ширине */
+  margin-bottom: 20px; /* Reduced margin */
+  padding: 10px; /* Add some padding */
+  text-align: center; /* Center content */
 }
 
 .header-content {
-  text-align: center;
-  flex-grow: 0;
+  margin-bottom: 15px; /* Space between title and subtitle */
 }
 
 .header-content h1 {
-  font-size: 2.5em; /* Меньше для мобильных */
+  font-size: 2.2em;
   color: #00d4ff;
   text-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
-  word-break: break-word; /* Перенос длинных слов */
+  word-break: break-word; /* Handle long words */
+  margin-bottom: 0.5em; /* Spacing below the heading */
 }
 
 .header-content p {
-  font-size: 1.1em; /* Меньше для мобильных */
+  font-size: 1.1em;
   color: #b0b0b0;
-  word-break: break-word; /* Перенос длинных слов */
+  word-break: break-word;
+  margin-bottom: 0; /* Remove default margin */
 }
 
+/* Wallet controls styles */
 .wallet-controls {
-  position: absolute;
-  top: -10px;
-  right: -20px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column; /* Stack controls vertically */
+  align-items: center; /* Center controls horizontally */
+  gap: 10px; /* Spacing between items */
+  margin-top: 10px; /* Space above the wallet controls */
 }
 
+/* Language buttons styles */
 .language-buttons {
   display: flex;
   gap: 8px;
@@ -79,17 +145,17 @@ body {
   background: transparent;
   border: 1px solid #00d4ff;
   color: #e0e0e0;
-  padding: 6px;
-  margin: 0;
+  padding: 8px; /* Increased padding */
   border-radius: 50%;
   cursor: pointer;
   font-size: 0.9em;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s;
+  line-height: 1; /* Prevent extra space */
 }
 
 .language-buttons button:hover {
@@ -98,13 +164,14 @@ body {
   transform: scale(1.1);
 }
 
+/* Wallet button styles */
 .wallet-button {
-  padding: 8px 18px;
+  padding: 10px 20px; /* Adjusted padding */
   background: #00d4ff;
   border: none;
   border-radius: 8px;
   color: #0a0a0a;
-  font-size: 0.8em;
+  font-size: 1em;
   cursor: pointer;
   transition: all 0.3s;
   font-family: "Orbitron", sans-serif;
@@ -115,46 +182,51 @@ body {
   box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
 }
 
+/* Wallet address styles */
 .wallet-address {
   color: #00d4ff;
-  font-size: 0.8em;
+  font-size: 0.9em;
   text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
-  word-break: break-word; /* Перенос длинных слов */
+  word-break: break-word;
+  margin-top: 5px; /* Add spacing above the address */
 }
 
+/* Form container styles */
 .form-container {
   background: rgba(31, 31, 31, 0.9);
-  padding: 20px; /* Меньше отступы */
+  padding: 25px; /* Adjusted padding */
   border-radius: 15px;
   box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
   width: 100%;
   max-width: 550px;
   backdrop-filter: blur(5px);
-  box-sizing: border-box; /* Учитываем padding */
+  margin-bottom: 20px; /* Space before footer */
 }
 
 .form-container h2 {
   color: #00d4ff;
   text-align: center;
-  margin-bottom: 20px; /* Меньше отступ */
-  font-size: 1.5em; /* Меньше заголовок */
+  margin-bottom: 20px; /* Adjusted margin */
+  font-size: 1.6em; /* Adjusted font size */
   text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
+/* Input and select styles */
 select,
 input {
   width: 100%;
-  padding: 10px; /* Меньше отступы */
-  margin: 10px 0; /* Меньше отступы */
+  padding: 12px;
+  margin: 10px 0;
   border: 1px solid #00d4ff;
   border-radius: 8px;
   background: rgba(42, 42, 42, 0.8);
   color: #e0e0e0;
-  font-size: 0.9em;
+  font-size: 1em;
   transition: all 0.3s;
   box-sizing: border-box;
 }
 
+/* Select specific styles */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -170,9 +242,10 @@ select option {
   background: rgba(42, 42, 42, 0.8);
   color: #e0e0e0;
   font-family: "Orbitron", sans-serif;
-  min-width: auto; /* Убираем фикс. ширину */
+  min-width: auto; /* Remove fixed width */
 }
 
+/* Focus styles for input and select */
 select:focus,
 input:focus {
   outline: none;
@@ -180,14 +253,15 @@ input:focus {
   border-color: #00b0d4;
 }
 
+/* Button styles */
 button {
   width: 100%;
-  padding: 12px; /* Меньше отступы */
+  padding: 14px;
   background: #00d4ff;
   border: none;
   border-radius: 8px;
   color: #0a0a0a;
-  font-size: 1em; /* Меньше размер */
+  font-size: 1.1em;
   cursor: pointer;
   transition: all 0.3s;
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
@@ -199,13 +273,14 @@ button:hover {
   transform: translateY(-2px);
 }
 
+/* Status message styles */
 .status {
-  margin-top: 15px; /* Меньше отступ */
+  margin-top: 15px;
   text-align: center;
   color: #00d4ff;
-  font-size: 0.9em; /* Меньше размер */
+  font-size: 0.9em;
   animation: fadeIn 0.5s;
-  word-break: break-word; /* Перенос длинных слов */
+  word-break: break-word;
 }
 
 .status.scanning {
@@ -229,38 +304,16 @@ button:hover {
   animation: scan 2s infinite;
 }
 
+/* Footer styles */
 footer {
-  margin-top: 20px; /* Меньше отступ */
+  margin-top: 20px;
   color: #b0b0b0;
-  font-size: 0.8em; /* Меньше размер */
-  text-align: center; /* Центрируем текст */
+  font-size: 0.8em;
+  text-align: center;
+  padding: 10px; /* Add some padding */
 }
 
-/* Media Queries для совсем маленьких экранов */
-@media (max-width: 576px) {
-  .header {
-    padding: 0 5px; /* Еще меньше отступ */
-  }
-  .wallet-controls {
-    position: static; /* Убираем absolute позиционирование */
-    margin-top: 10px; /* Добавляем отступ сверху */
-    flex-direction: column; /* Кнопки в столбик */
-    align-items: center; /* Центрируем по горизонтали */
-  }
-  .language-buttons {
-    margin-bottom: 5px; /* Отступ между кнопками и кошельком */
-  }
-  .form-container {
-    padding: 15px; /* Еще меньше отступы */
-  }
-  .header-content h1 {
-    font-size: 2em; /* Еще меньше */
-  }
-  .header-content p {
-    font-size: 1em; /* Еще меньше */
-  }
-}
-
+/* Keyframes for animations */
 @keyframes glow {
   0% {
     text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
@@ -288,5 +341,104 @@ footer {
   }
   100% {
     left: 100%;
+  }
+}
+
+/* Media queries for responsiveness */
+/* For extra small screens (phones) */
+@media (max-width: 576px) {
+  .app-container {
+    padding: 10px; /* Further reduced padding for smaller screens */
+  }
+
+  .header {
+    padding: 5px; /* Reduced header padding */
+  }
+
+  .header-content h1 {
+    font-size: 1.9em; /* Further reduce the font size */
+  }
+
+  .header-content p {
+    font-size: 1em;
+  }
+
+  .wallet-controls {
+    flex-direction: column; /* Stack the buttons and address */
+    align-items: center; /* Center them */
+  }
+
+  .language-buttons {
+    margin-bottom: 5px; /* Give some space between the language buttons and wallet */
+  }
+
+  .wallet-button {
+    font-size: 0.9em; /* Adjust the font size of the button */
+  }
+
+  .wallet-address {
+    font-size: 0.8em; /* Smaller wallet address */
+  }
+
+  .form-container {
+    padding: 15px; /* Further reduce the form container padding */
+  }
+
+  .form-container h2 {
+    font-size: 1.4em; /* Reduce the heading size */
+  }
+
+  select,
+  input,
+  button {
+    padding: 10px; /* Adjust the padding of input elements */
+    font-size: 0.9em; /* Make the input elements smaller */
+  }
+
+  .status {
+    font-size: 0.8em; /* Smaller status text */
+  }
+
+  footer {
+    font-size: 0.75em; /* Further reduce the footer size */
+  }
+}
+
+/* For small screens (tablets) */
+@media (min-width: 577px) and (max-width: 768px) {
+  .header-content h1 {
+    font-size: 2.4em; /* Adjust heading size for tablets */
+  }
+
+  .form-container {
+    padding: 30px; /* Slightly increase form container padding */
+  }
+
+  select,
+  input,
+  button {
+    font-size: 1.1em; /* Slightly increase font size for tablet inputs */
+  }
+}
+
+/* For medium screens (desktops) */
+@media (min-width: 769px) and (max-width: 992px) {
+  .header-content h1 {
+    font-size: 2.6em; /* Adjust heading size for smaller desktops */
+  }
+}
+
+/* For larger screens (desktops) */
+@media (min-width: 993px) {
+  .app-container {
+    padding: 25px; /* Increase padding for larger screens */
+  }
+
+  .header-content h1 {
+    font-size: 2.8em; /* Adjust heading size for larger desktops */
+  }
+
+  .form-container {
+    padding: 40px; /* Increase form container padding */
   }
 }

@@ -1,38 +1,256 @@
-.App {
-  text-align: center;
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap");
+
+body {
+  margin: 0;
+  font-family: "Orbitron", sans-serif;
+  background: #0a0a0a;
+  color: #e0e0e0;
+  overflow-x: hidden;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  position: relative;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+}
+
+#tsparticles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.header {
+  display: flex;
+  justify-content: center; /* Центрируем содержимое */
+  align-items: flex-start; /* Выравниваем по верхнему краю */
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  margin-bottom: 40px;
+  position: relative; /* Для позиционирования кнопок */
+  animation: glow 2s infinite alternate;
+}
+
+.header-content {
+  text-align: center;
+  flex-grow: 0; /* Заголовок не растягивается */
+}
+
+.header-content h1 {
+  font-size: 3em;
+  color: #00d4ff;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+}
+
+.header-content p {
+  font-size: 1.3em;
+  color: #b0b0b0;
+}
+
+.wallet-controls {
+  position: absolute;
+  top: -10px; /* Выше */
+  right: -20px; /* Правее */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.language-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.language-buttons button {
+  background: transparent;
+  border: 1px solid #00d4ff;
+  color: #e0e0e0;
+  padding: 6px;
+  margin: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1em; /* Чуть меньше, чтобы было компактно */
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  transition: all 0.3s;
 }
 
-.App-link {
-  color: #61dafb;
+.language-buttons button:hover {
+  background: #00d4ff;
+  color: #0a0a0a;
+  transform: scale(1.1);
 }
 
-@keyframes App-logo-spin {
+.wallet-button {
+  padding: 8px 18px; /* Компактнее, чтобы не выбиваться */
+  background: #00d4ff;
+  border: none;
+  border-radius: 8px;
+  color: #0a0a0a;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "Orbitron", sans-serif;
+}
+
+.wallet-button:hover {
+  background: #00b0d4;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+}
+
+.wallet-address {
+  color: #00d4ff;
+  font-size: 0.9em;
+  text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+}
+
+.form-container {
+  background: rgba(31, 31, 31, 0.9);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+  width: 100%;
+  max-width: 550px;
+  backdrop-filter: blur(5px);
+}
+
+.form-container h2 {
+  color: #00d4ff;
+  text-align: center;
+  margin-bottom: 25px;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+select,
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  background: rgba(42, 42, 42, 0.8);
+  color: #e0e0e0;
+  font-size: 1em;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%2300d4ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+select option {
+  padding: 10px;
+  background: rgba(42, 42, 42, 0.8);
+  color: #e0e0e0;
+  font-family: "Orbitron", sans-serif;
+  min-width: 400px;
+}
+
+select:focus,
+input:focus {
+  outline: none;
+  box-shadow: 0 0 10px #00d4ff;
+  border-color: #00b0d4;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  background: #00d4ff;
+  border: none;
+  border-radius: 8px;
+  color: #0a0a0a;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+button:hover {
+  background: #00b0d4;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.7);
+  transform: translateY(-2px);
+}
+
+.status {
+  margin-top: 20px;
+  text-align: center;
+  color: #00d4ff;
+  animation: fadeIn 0.5s;
+}
+
+.status.scanning {
+  position: relative;
+  overflow: hidden;
+}
+
+.status.scanning::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 212, 255, 0.3),
+    transparent
+  );
+  animation: scan 2s infinite;
+}
+
+footer {
+  margin-top: 30px;
+  color: #b0b0b0;
+  font-size: 0.9em;
+}
+
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+  }
+}
+
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+  }
+}
+
+@keyframes scan {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
   }
 }

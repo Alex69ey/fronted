@@ -1,87 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap");
 
-/* Resetting default styles */
-html,
-body,
-div,
-span,
-applet,
-object,
-iframe,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-blockquote,
-pre,
-a,
-abbr,
-acronym,
-address,
-big,
-cite,
-code,
-del,
-dfn,
-em,
-img,
-ins,
-kbd,
-q,
-s,
-samp,
-small,
-strike,
-strong,
-sub,
-sup,
-tt,
-var,
-b,
-u,
-i,
-center,
-dl,
-dt,
-dd,
-ol,
-ul,
-li,
-fieldset,
-form,
-label,
-legend,
-table,
-caption,
-tbody,
-tfoot,
-thead,
-tr,
-th,
-td,
-article,
-aside,
-canvas,
-details,
-embed,
-figure,
-figcaption,
-footer,
-header,
-hgroup,
-menu,
-nav,
-output,
-ruby,
-section,
-summary,
-time,
-mark,
-audio,
-video {
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
   margin: 0;
   padding: 0;
   border: 0;
@@ -90,18 +9,7 @@ video {
   vertical-align: baseline;
 }
 
-/* HTML5 display-role reset for older browsers */
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section {
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
   display: block;
 }
 
@@ -109,20 +17,15 @@ body {
   line-height: 1;
 }
 
-ol,
-ul {
+ol, ul {
   list-style: none;
 }
 
-blockquote,
-q {
+blockquote, q {
   quotes: none;
 }
 
-blockquote:before,
-blockquote:after,
-q:before,
-q:after {
+blockquote:before, blockquote:after, q:before, q:after {
   content: "";
   content: none;
 }
@@ -132,14 +35,11 @@ table {
   border-spacing: 0;
 }
 
-/* General styles */
 html {
   box-sizing: border-box;
 }
 
-*,
-*:before,
-*:after {
+*, *:before, *:after {
   box-sizing: inherit;
 }
 
@@ -149,23 +49,26 @@ body {
   background: #0a0a0a;
   color: #e0e0e0;
   overflow-x: hidden;
-  font-size: 16px; /* Base font size */
-  line-height: 1.6; /* Improve readability */
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-/* App container */
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 15px; /* Reduced padding */
+  padding: 15px;
   position: relative;
   background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
 }
 
-/* Particles.js styles */
+.app-container.loading {
+  opacity: 0;
+  pointer-events: none;
+}
+
 #tsparticles {
   position: absolute;
   top: 0;
@@ -175,48 +78,49 @@ body {
   z-index: -1;
 }
 
-/* Header styles */
 .header {
   display: flex;
-  flex-direction: column; /* Stack content vertically */
-  align-items: center; /* Center items horizontally */
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  max-width: 1100px;
+  max-width: 550px;
   margin: 0 auto;
-  margin-bottom: 20px; /* Reduced margin */
-  padding: 10px; /* Add some padding */
-  text-align: center; /* Center content */
+  margin-bottom: 20px;
+  padding: 25px;
+  text-align: center;
+  background: rgba(31, 31, 31, 0.9);
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+  backdrop-filter: blur(5px);
 }
 
 .header-content {
-  margin-bottom: 15px; /* Space between title and subtitle */
+  margin-bottom: 15px;
 }
 
 .header-content h1 {
   font-size: 2.2em;
   color: #00d4ff;
   text-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
-  word-break: break-word; /* Handle long words */
-  margin-bottom: 0.5em; /* Spacing below the heading */
+  word-break: break-word;
+  margin-bottom: 0.5em;
 }
 
 .header-content p {
   font-size: 1.1em;
   color: #b0b0b0;
   word-break: break-word;
-  margin-bottom: 0; /* Remove default margin */
+  margin-bottom: 0;
 }
 
-/* Wallet controls styles */
 .wallet-controls {
   display: flex;
-  flex-direction: column; /* Stack controls vertically */
-  align-items: center; /* Center controls horizontally */
-  gap: 10px; /* Spacing between items */
-  margin-top: 10px; /* Space above the wallet controls */
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-/* Language buttons styles */
 .language-buttons {
   display: flex;
   gap: 8px;
@@ -226,7 +130,7 @@ body {
   background: transparent;
   border: 1px solid #00d4ff;
   color: #e0e0e0;
-  padding: 8px; /* Increased padding */
+  padding: 8px;
   border-radius: 50%;
   cursor: pointer;
   font-size: 0.9em;
@@ -236,7 +140,7 @@ body {
   align-items: center;
   justify-content: center;
   transition: all 0.3s;
-  line-height: 1; /* Prevent extra space */
+  line-height: 1;
 }
 
 .language-buttons button:hover {
@@ -245,9 +149,8 @@ body {
   transform: scale(1.1);
 }
 
-/* Wallet button styles */
 .wallet-button {
-  padding: 10px 20px; /* Adjusted padding */
+  padding: 10px 20px;
   background: #00d4ff;
   border: none;
   border-radius: 8px;
@@ -263,38 +166,34 @@ body {
   box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
 }
 
-/* Wallet address styles */
 .wallet-address {
   color: #00d4ff;
   font-size: 0.9em;
   text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
   word-break: break-word;
-  margin-top: 5px; /* Add spacing above the address */
+  margin-top: 5px;
 }
 
-/* Form container styles */
 .form-container {
   background: rgba(31, 31, 31, 0.9);
-  padding: 25px; /* Adjusted padding */
+  padding: 25px;
   border-radius: 15px;
   box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
   width: 100%;
   max-width: 550px;
   backdrop-filter: blur(5px);
-  margin-bottom: 20px; /* Space before footer */
+  margin-bottom: 20px;
 }
 
 .form-container h2 {
   color: #00d4ff;
   text-align: center;
-  margin-bottom: 20px; /* Adjusted margin */
-  font-size: 1.6em; /* Adjusted font size */
+  margin-bottom: 20px;
+  font-size: 1.6em;
   text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
-/* Input and select styles */
-select,
-input {
+select, input {
   width: 100%;
   padding: 12px;
   margin: 10px 0;
@@ -307,7 +206,6 @@ input {
   box-sizing: border-box;
 }
 
-/* Select specific styles */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -323,18 +221,14 @@ select option {
   background: rgba(42, 42, 42, 0.8);
   color: #e0e0e0;
   font-family: "Orbitron", sans-serif;
-  min-width: auto; /* Remove fixed width */
 }
 
-/* Focus styles for input and select */
-select:focus,
-input:focus {
+select:focus, input:focus {
   outline: none;
   box-shadow: 0 0 10px #00d4ff;
   border-color: #00b0d4;
 }
 
-/* Button styles */
 button {
   width: 100%;
   padding: 14px;
@@ -354,7 +248,6 @@ button:hover {
   transform: translateY(-2px);
 }
 
-/* Status message styles */
 .status {
   margin-top: 15px;
   text-align: center;
@@ -385,146 +278,14 @@ button:hover {
   animation: scan 2s infinite;
 }
 
-/* Footer styles */
 footer {
   margin-top: 20px;
   color: #b0b0b0;
   font-size: 0.8em;
   text-align: center;
-  padding: 10px; /* Add some padding */
+  padding: 10px;
 }
 
-/* Keyframes for animations */
-@keyframes glow {
-  0% {
-    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-  }
-  100% {
-    text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scan {
-  0% {
-    left: -100%;
-  }
-  50% {
-    left: 100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-
-/* Media queries for responsiveness */
-/* For extra small screens (phones) */
-@media (max-width: 576px) {
-  .app-container {
-    padding: 10px; /* Further reduced padding for smaller screens */
-  }
-
-  .header {
-    padding: 5px; /* Reduced header padding */
-  }
-
-  .header-content h1 {
-    font-size: 1.9em; /* Further reduce the font size */
-  }
-
-  .header-content p {
-    font-size: 1em;
-  }
-
-  .wallet-controls {
-    flex-direction: column; /* Stack the buttons and address */
-    align-items: center; /* Center them */
-  }
-
-  .language-buttons {
-    margin-bottom: 5px; /* Give some space between the language buttons and wallet */
-  }
-
-  .wallet-button {
-    font-size: 0.9em; /* Adjust the font size of the button */
-  }
-
-  .wallet-address {
-    font-size: 0.8em; /* Smaller wallet address */
-  }
-
-  .form-container {
-    padding: 15px; /* Further reduce the form container padding */
-  }
-
-  .form-container h2 {
-    font-size: 1.4em; /* Reduce the heading size */
-  }
-
-  select,
-  input,
-  button {
-    padding: 10px; /* Adjust the padding of input elements */
-    font-size: 0.9em; /* Make the input elements smaller */
-  }
-
-  .status {
-    font-size: 0.8em; /* Smaller status text */
-  }
-
-  footer {
-    font-size: 0.75em; /* Further reduce the footer size */
-  }
-}
-
-/* For small screens (tablets) */
-@media (min-width: 577px) and (max-width: 768px) {
-  .header-content h1 {
-    font-size: 2.4em; /* Adjust heading size for tablets */
-  }
-
-  .form-container {
-    padding: 30px; /* Slightly increase form container padding */
-  }
-
-  select,
-  input,
-  button {
-    font-size: 1.1em; /* Slightly increase font size for tablet inputs */
-  }
-}
-
-/* For medium screens (desktops) */
-@media (min-width: 769px) and (max-width: 992px) {
-  .header-content h1 {
-    font-size: 2.6em; /* Adjust heading size for smaller desktops */
-  }
-}
-
-/* For larger screens (desktops) */
-@media (min-width: 993px) {
-  .app-container {
-    padding: 25px; /* Increase padding for larger screens */
-  }
-
-  .header-content h1 {
-    font-size: 2.8em; /* Adjust heading size for larger desktops */
-  }
-
-  .form-container {
-    padding: 40px; /* Increase form container padding */
-  }
-}
-
-/* Styles for the splash screen */
 .splash-screen {
   position: fixed;
   top: 0;
@@ -532,92 +293,384 @@ footer {
   width: 100%;
   height: 100%;
   background: #0a0a0a;
-  color: #00d4ff; /* Яркий цвет для текста */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
-  text-align: center; /* Центрирование текста */
+  z-index: 1000;
+  transition: opacity 0.5s ease-in-out;
 }
 
-/* Стили для текста статуса */
-.status-text {
-  font-size: 1.2em;
-  margin-top: 20px;
-  text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
-  animation: fadeIn 0.5s;
+.splash-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* Стили для "графика" (можно заменить на SVG или Canvas) */
 .ai-graphic {
-  width: 80%;
-  max-width: 400px;
-  height: 100px;
-  border-bottom: 2px solid #00d4ff;
   position: relative;
-  overflow: hidden;
+  width: 660px; /* Увеличено на 10% */
+  height: 330px; /* Увеличено на 10% */
+  margin-bottom: 20px;
 }
 
-.ai-graphic .line {
+.status-text {
+  font-size: 18px;
+  color: #00d4ff;
+  text-align: center;
+}
+
+.chart-grid {
   position: absolute;
-  top: 50%;
-  left: -100%;
-  width: 200%;
-  height: 2px;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(
-    90deg,
-    transparent,
-    #00d4ff,
-    transparent
-  ); /* Анимированная линия */
-  animation: scan-line 4s linear infinite;
+      to right,
+      rgba(0, 212, 255, 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
-.ai-graphic .dots {
+.candlestick-chart {
+  width: 100%;
+  height: 100%;
+}
+
+.candle {
+  opacity: 0;
+}
+
+.wick {
+  opacity: 0;
+  stroke-width: 1;
+}
+
+.candle.bearish {
+  fill: url(#bearish-gradient);
+  animation: draw-candle-bearish 0.1s forwards;
+  filter: drop-shadow(0 0 4px rgba(255, 77, 77, 0.7));
+}
+
+.wick.bearish {
+  stroke: #ff4d4d;
+  animation: draw-wick 0.1s forwards;
+}
+
+.candle.bullish {
+  fill: url(#bullish-gradient);
+  animation: draw-candle-bullish 0.1s forwards;
+  filter: drop-shadow(0 0 4px rgba(77, 255, 77, 0.7));
+}
+
+.wick.bullish {
+  stroke: #4dff4d;
+  animation: draw-wick 0.1s forwards;
+}
+
+/* Стили для столбцов объёма */
+.volume-bar {
+  opacity: 0;
+}
+
+.volume-bar.bullish {
+  fill: #4dff4d;
+  opacity: 0.9;
+  animation: draw-volume 0.1s forwards;
+}
+
+.volume-bar.bearish {
+  fill: #ff4d4d;
+  opacity: 0.9;
+  animation: draw-volume 0.1s forwards;
+}
+
+/* Стили для линий Боллинджера */
+.bollinger-sma {
+  fill: none;
+  stroke: #00d4ff;
+  stroke-width: 1;
+  opacity: 0.8;
+}
+
+.bollinger-upper,
+.bollinger-lower {
+  fill: none;
+  stroke: #ffcc00;
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.ai-activation-text {
+  fill: #00d4ff;
+  font-size: 14px;
+  font-family: "Orbitron", sans-serif;
+  opacity: 0;
+  animation: fadeIn 0.1s forwards;
+}
+
+/* Стили для искр вокруг текста */
+.sparkles {
+  pointer-events: none;
+}
+
+.sparkle {
+  fill: #00d4ff;
+  opacity: 0;
+  filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.7));
+  animation: sparkle 0.75s forwards;
+}
+
+.sparkle1 { animation-delay: 0s; }
+.sparkle2 { animation-delay: 0.1s; }
+.sparkle3 { animation-delay: 0.2s; }
+.sparkle4 { animation-delay: 0.3s; }
+.sparkle5 { animation-delay: 0.4s; }
+
+.candle1, .wick1-high, .wick1-low, .volume-bar1 { animation-delay: 0s; }
+.candle2, .wick2-high, .wick2-low, .volume-bar2 { animation-delay: 0.25s; }
+.candle3, .wick3-high, .wick3-low, .volume-bar3 { animation-delay: 0.5s; }
+.candle4, .wick4-high, .wick4-low, .volume-bar4 { animation-delay: 0.75s; }
+.candle5, .wick5-high, .wick5-low, .volume-bar5 { animation-delay: 1s; }
+.candle6, .wick6-high, .wick6-low, .volume-bar6 { animation-delay: 1.25s; }
+.candle7, .wick7-high, .wick7-low, .volume-bar7 { animation-delay: 1.5s; }
+.candle8, .wick8-high, .wick8-low, .volume-bar8 { animation-delay: 1.75s; }
+.candle9, .wick9-high, .wick9-low, .volume-bar9 { animation-delay: 2s; }
+.candle10, .wick10-high, .wick10-low, .volume-bar10 { animation-delay: 2.25s; }
+.candle11, .wick11-high, .wick11-low, .volume-bar11 { animation-delay: 2.5s; }
+.candle12, .wick12-high, .wick12-low, .volume-bar12 { animation-delay: 2.75s; }
+.candle13, .wick13-high, .wick13-low, .volume-bar13 { animation-delay: 3s; }
+.candle14, .wick14-high, .wick14-low, .volume-bar14 { animation-delay: 3.25s; }
+.candle15, .wick15-high, .wick15-low, .volume-bar15 { animation-delay: 3.5s; }
+.candle16, .wick16-high, .wick16-low, .volume-bar16 { animation-delay: 3.75s; }
+.candle17, .wick17-high, .wick17-low, .volume-bar17 { animation-delay: 4s; }
+.candle18, .wick18-high, .wick18-low, .volume-bar18 { animation-delay: 4.25s; }
+.candle19, .wick19-high, .wick19-low, .volume-bar19 { animation-delay: 4.5s; }
+.candle20, .wick20-high, .wick20-low, .volume-bar20 { animation-delay: 4.75s; }
+.candle21, .wick21-high, .wick21-low, .volume-bar21 { animation-delay: 5s; }
+.candle22, .wick22-high, .wick22-low, .volume-bar22 { animation-delay: 5.25s; }
+.candle23, .wick23-high, .wick23-low, .volume-bar23 { animation-delay: 5.5s; }
+.candle24, .wick24-high, .wick24-low, .volume-bar24 { animation-delay: 5.75s; }
+.candle25, .wick25-high, .wick25-low, .volume-bar25 { animation-delay: 6s; }
+
+/* Градиенты для свечей */
+.candlestick-chart defs {
+  linearGradient#bullish-gradient {
+    stop:nth-child(1) {
+      stop-color: #4dff4d;
+      stop-opacity: 1;
+    }
+    stop:nth-child(2) {
+      stop-color: #2e9b2e;
+      stop-opacity: 1;
+    }
+  }
+
+  linearGradient#bearish-gradient {
+    stop:nth-child(1) {
+      stop-color: #ff4d4d;
+      stop-opacity: 1;
+    }
+    stop:nth-child(2) {
+      stop-color: #b22222;
+      stop-opacity: 1;
+    }
+  }
+}
+
+@keyframes glow {
+  0% { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+  100% { text-shadow: 0 0 20px rgba(0, 212, 255, 0.8); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scan {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+@keyframes pulse-bg {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+
+@keyframes draw-candle-bearish {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scaleY(0);
+    transform-origin: top;
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(0) scaleY(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes draw-candle-bullish {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scaleY(0);
+    transform-origin: bottom;
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(0) scaleY(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes draw-wick {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scaleY(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes draw-volume {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+  100% {
+    opacity: 0.9;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(5px, -5px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -10px);
+  }
+}
+
+@media (max-width: 576px) {
+  .app-container {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 15px;
+  }
+
+  .header-content h1 {
+    font-size: 1.9em;
+  }
+
+  .header-content p {
+    font-size: 1em;
+  }
+
+  .wallet-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .language-buttons {
+    margin-bottom: 5px;
+  }
+
+  .wallet-button {
+    font-size: 0.9em;
+  }
+
+  .wallet-address {
+    font-size: 0.8em;
+  }
+
+  .form-container {
+    padding: 15px;
+  }
+
+  .form-container h2 {
+    font-size: 1.4em;
+  }
+
+  select, input, button {
+    padding: 10px;
+    font-size: 0.9em;
+  }
+
+  .status {
+    font-size: 0.8em;
+  }
+
+  footer {
+    font-size: 0.75em;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .header-content h1 {
+    font-size: 2.4em;
+  }
+
+  .form-container {
+    padding: 30px;
+  }
+
+  select, input, button {
+    font-size: 1.1em;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+  .header-content h1 {
+    font-size: 2.6em;
+  }
+}
+
+@media (min-width: 993px) {
+  .app-container {
+    padding: 25px;
+  }
+
+  .header-content h1 {
+    font-size: 2.8em;
+  }
+
+  .form-container {
+    padding: 40px;
+  }
+}
+
+.splash-screen::before {
+  content: "";
   position: absolute;
-  top: 10px;
+  top: 0;
   left: 0;
   width: 100%;
-  height: 10px;
-  display: flex;
-  justify-content: space-around;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+  animation: pulse-bg 4s infinite;
 }
-
-.ai-graphic .dots span {
-  width: 10px;
-  height: 10px;
-  background-color: #00d4ff;
-  border-radius: 50%;
-  animation: pulse 1.5s linear infinite alternate;
-}
-
-.ai-graphic .dots span:nth-child(2) {
-  animation-delay: 0.5s;
-}
-
-.ai-graphic .dots span:nth-child(3) {
-  animation-delay: 1s;
-}
-
-/* Анимации */
-@keyframes scan-line {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-

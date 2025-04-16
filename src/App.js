@@ -15,18 +15,39 @@ const providerOptions = {
     package: WalletConnectProvider,
     options: {
       infuraId: "YOUR_INFURA_ID", // Замени на свой Infura ID
+      qrcode: true,
+      qrcodeModalOptions: {
+        mobileLinks: ["metamask", "trust", "rainbow"], // Поддержка MetaMask, Trust Wallet
+      },
     },
+  },
+  injected: {
+    display: {
+      name: "MetaMask",
+      description: "Connect with MetaMask in your browser",
+    },
+    package: null,
   },
 };
 
 const web3Modal = new Web3Modal({
-  network: "sepolia",
   cacheProvider: true,
   providerOptions,
 });
 
-const contractAddress = "0xYOUR_DEPLOYED_CONTRACT_ADDRESS"; // Замени после деплоя
-const usdtAddress = "0xYOUR_SEPOLIA_USDT_ADDRESS"; // Замени на тестовый USDT в Sepolia
+// Маппинг адресов контрактов и USDT для каждой сети
+const contractAddresses = {
+  "0x1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS", // Замени на адрес контракта в Ethereum Mainnet
+  "0x38": "0xYOUR_BSC_CONTRACT_ADDRESS", // Замени на адрес контракта в BSC
+  "0xaa36a7": "0xYOUR_SEPOLIA_CONTRACT_ADDRESS", // Замени на адрес контракта в Sepolia
+};
+
+const usdtAddresses = {
+  "0x1": "0xdAC17F958D2ee523a2206206994597C13D831ec", // USDT в Ethereum Mainnet
+  "0x38": "0x55d398326f99059fF775485246999027B319795", // USDT в BSC
+  "0xaa36a7": "0x7169D38820dfd117C3FA1f22a697dBA58d90BA7", // Тестовый USDT в Sepolia (проверь актуальность)
+};
+
 const abi = [
   "function payForService(uint8 _tariffId, bytes memory _encryptedData) external",
   "event PaymentReceived(address indexed client, uint256 amount, uint8 tariffId, bytes encryptedData)",
@@ -41,12 +62,23 @@ function App() {
     volume: "",
     priceMovement: "",
     dex: "",
+    strategy: "",
   });
   const [tariffId, setTariffId] = useState(1);
-  const [status, setStatus] = useState("Connecting to NeuralNet..."); // Инициализация состояния здесь
+  const [status, setStatus] = useState("Connecting to NeuralNet...");
   const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
-  const [isLoading, setIsLoading] = useState(true); // Добавлено состояние загрузки
+  const [isLoading, setIsLoading] = useState(true);
+  const [candles, setCandles] = useState([]);
+  const [bollingerBandsDynamic, setBollingerBandsDynamic] = useState([]); // Динамические линии Боллинджера
+  const [selectedNetwork, setSelectedNetwork] = useState(""); // Состояние для выбранной сети
+  const [provider, setProvider] = useState(null); // Сохраняем провайдер для переключения сети
+
+  const networks = [
+    { chainId: "0x1", name: "Ethereum Mainnet" }, // Chain ID 1
+    { chainId: "0x38", name: "BNB Smart Chain" }, // Chain ID 56 (0x38 в шестнадцатеричном формате)
+    { chainId: "0xaa36a7", name: "Sepolia Testnet" }, // Chain ID 11155111 (0xaa36a7 в шестнадцатеричном формате)
+  ];
 
   const tariffs = [
     { id: 1, name: "2 Weeks, 1 Pair - 690 USDT" },
@@ -64,29 +96,155 @@ function App() {
     { id: 13, name: "Project support - 999 USDT" },
   ];
 
+  // Данные свечей
+  const candleData = [
+    { x: 20, y: 238, height: 5, type: "bullish" },
+    { x: 40, y: 240, height: 6, type: "bearish" },
+    { x: 60, y: 235, height: 4, type: "bullish" },
+    { x: 80, y: 238, height: 7, type: "bearish" },
+    { x: 100, y: 236, height: 5, type: "bullish" },
+    { x: 120, y: 230, height: 12, type: "bullish" },
+    { x: 140, y: 220, height: 10, type: "bullish" },
+    { x: 160, y: 208, height: 12, type: "bullish" },
+    { x: 180, y: 194, height: 12, type: "bullish" },
+    { x: 200, y: 180, height: 13, type: "bullish" },
+    { x: 220, y: 175, height: 14, type: "bullish" },
+    { x: 240, y: 170, height: 15, type: "bullish" },
+    { x: 260, y: 160, height: 16, type: "bullish" },
+    { x: 280, y: 170, height: 10, type: "bearish" },
+    { x: 300, y: 180, height: 12, type: "bearish" },
+    { x: 320, y: 190, height: 14, type: "bearish" },
+    { x: 340, y: 180, height: 14, type: "bullish" },
+    { x: 360, y: 160, height: 15, type: "bullish" },
+    { x: 380, y: 140, height: 16, type: "bullish" },
+    { x: 400, y: 120, height: 17, type: "bullish" },
+    { x: 420, y: 100, height: 18, type: "bullish" },
+    { x: 440, y: 80, height: 19, type: "bullish" },
+    { x: 460, y: 60, height: 20, type: "bullish" },
+    { x: 480, y: 40, height: 21, type: "bullish" },
+    { x: 500, y: 20, height: 22, type: "bullish" },
+  ];
+
+  // Добавляем случайные фитили с разными диапазонами
+  candleData.forEach((candle, index) => {
+    const isFirstFive = index < 5;
+    const minWick = isFirstFive ? 2 : 10; // Минимальная длина фитиля
+    const maxWick = isFirstFive ? 8 : 30; // Максимальная длина фитиля
+    const randomHighWick = Math.floor(Math.random() * (maxWick - minWick + 1)) + minWick;
+    const randomLowWick = Math.floor(Math.random() * (maxWick - minWick + 1)) + minWick;
+    candle.high = candle.y + randomHighWick; // Верхний фитиль
+    candle.low = (candle.type === "bullish" ? candle.y + candle.height : candle.y) - randomLowWick; // Нижний фитиль
+  });
+
+  // Рассчитаем объём на основе разницы между high и low с добавлением случайности
+  const calculateVolume = (candle, index) => {
+    const priceRange = candle.high - candle.low;
+    const baseVolume = priceRange * 2;
+    const randomFactor = Math.random() * 0.5 + 0.75;
+    let volume = baseVolume * randomFactor;
+
+    if (index < 5) {
+      volume = Math.min(volume, 15);
+      volume = Math.max(volume, 5);
+    } else {
+      volume = Math.min(volume, 60);
+      volume = Math.max(volume, 10);
+    }
+
+    return Math.round(volume);
+  };
+
+  // Добавляем объём в candleData
+  candleData.forEach((candle, index) => {
+    candle.volume = calculateVolume(candle, index);
+  });
+
+  // Вручную корректируем объёмы для свеч 6, 7, 8 (уменьшаем) и 23, 24, 25 (увеличиваем)
+  candleData[5].volume = 5; // Свеча 6
+  candleData[6].volume = 7; // Свеча 7
+  candleData[7].volume = 10; // Свеча 8
+  candleData[22].volume = 50; // Свеча 23
+  candleData[23].volume = 55; // Свеча 24
+  candleData[24].volume = 60; // Свеча 25
+
+  // Расчёт линий Боллинджера (предварительный, для всех свечей)
+  const period = 5; // Период для SMA
+  const multiplier = 2; // Множитель для стандартного отклонения
+  const bollingerBands = [];
+
+  // Функция для расчёта SMA
+  const calculateSMA = (data, start, period) => {
+    const slice = data.slice(start, start + period);
+    const sum = slice.reduce((acc, val) => acc + val, 0);
+    return sum / period;
+  };
+
+  // Функция для расчёта стандартного отклонения
+  const calculateSD = (data, start, period, mean) => {
+    const slice = data.slice(start, start + period);
+    const variance = slice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / period;
+    return Math.sqrt(variance);
+  };
+
+  // Получаем цены закрытия для каждой свечи
+  const closePrices = candleData.map(candle => 
+    candle.type === "bullish" ? candle.y + candle.height : candle.y
+  );
+
+  // Рассчитываем линии Боллинджера для всех свечей
+  for (let i = 0; i < candleData.length; i++) {
+    let sma;
+    if (i < period - 1) {
+      sma = calculateSMA(closePrices, 0, period);
+    } else {
+      sma = calculateSMA(closePrices, i - period + 1, period);
+    }
+    const sd = i < period - 1 
+      ? calculateSD(closePrices, 0, period, sma) 
+      : calculateSD(closePrices, i - period + 1, period, sma);
+    const upperBand = sma + (sd * multiplier);
+    const lowerBand = sma - (sd * multiplier);
+
+    bollingerBands.push({
+      x: candleData[i].x,
+      sma: sma,
+      upper: upperBand,
+      lower: lowerBand,
+    });
+  }
+
+  // Динамическое добавление свечей и линий Боллинджера (интервал 0.25 сек)
   useEffect(() => {
-    // Симуляция процесса "загрузки" AI и криптографики
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < candleData.length && candleData[index]) {
+        // Добавляем свечу
+        setCandles((prev) => [...prev, candleData[index]]);
+        // Добавляем соответствующую точку линий Боллинджера
+        setBollingerBandsDynamic((prev) => [...prev, bollingerBands[index]]);
+        index++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => setIsLoading(false), 250);
+      }
+    }, 250);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const fakeLoading = async () => {
-      // 1. Имитация сканирования криптографических данных
       setStatus("Analyzing blockchain data...");
-      await delay(1000);
-
-      // 2. Имитация нейронной сети
+      await delay(1200);
       setStatus("Initializing neural network...");
-      await delay(1000);
-
-      // 3. Имитация оптимизации алгоритмов
+      await delay(1200);
       setStatus("Optimizing trading algorithms...");
-      await delay(1000);
-
-      // 4. Имитация процесса шифрования
+      await delay(1200);
       setStatus("Encrypting trading strategies...");
-      await delay(1000);
-
-      // 5. Готово!
+      await delay(1200);
       setStatus("DApp ready!");
-      await delay(500);
-      setIsLoading(false);
+      await delay(1200);
     };
 
     fakeLoading();
@@ -96,13 +254,22 @@ function App() {
 
   const connectWallet = async () => {
     try {
-      const provider = await web3Modal.connect();
-      const ethersProvider = new ethers.providers.Web3Provider(provider);
+      // Всегда используем Web3Modal для выбора кошелька
+      const web3Provider = await web3Modal.connect();
+      const ethersProvider = new ethers.providers.Web3Provider(web3Provider);
       const signer = ethersProvider.getSigner();
       const address = await signer.getAddress();
+
+      // Сохраняем провайдер для переключения сети
+      setProvider(web3Provider);
+
       setWalletConnected(true);
       setWalletAddress(address);
       setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+
+      // После подключения кошелька устанавливаем сеть по умолчанию (например, Sepolia)
+      setSelectedNetwork(networks[2].chainId); // Устанавливаем Sepolia по умолчанию
+
       return signer;
     } catch (error) {
       setStatus(`Connection error: ${error.message}`);
@@ -114,7 +281,92 @@ function App() {
     await web3Modal.clearCachedProvider();
     setWalletConnected(false);
     setWalletAddress("");
+    setSelectedNetwork("");
+    setProvider(null);
     setStatus("Wallet disconnected");
+  };
+
+  const switchNetwork = async (chainId) => {
+    if (!provider) {
+      setStatus("Please connect your wallet first!");
+      return;
+    }
+
+    try {
+      await provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId }],
+      });
+      setSelectedNetwork(chainId);
+      setStatus(`Switched to ${networks.find(net => net.chainId === chainId).name}`);
+    } catch (error) {
+      // Если сеть не добавлена в кошелёк, добавим её
+      if (error.code === 4902) {
+        try {
+          if (chainId === "0x38") {
+            // Добавляем BNB Smart Chain
+            await provider.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: "0x38",
+                  chainName: "BNB Smart Chain",
+                  nativeCurrency: {
+                    name: "BNB",
+                    symbol: "BNB",
+                    decimals: 18,
+                  },
+                  rpcUrls: ["https://bsc-dataseed.binance.org/"],
+                  blockExplorerUrls: ["https://bscscan.com"],
+                },
+              ],
+            });
+          } else if (chainId === "0x1") {
+            // Добавляем Ethereum Mainnet
+            await provider.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: "0x1",
+                  chainName: "Ethereum Mainnet",
+                  nativeCurrency: {
+                    name: "Ether",
+                    symbol: "ETH",
+                    decimals: 18,
+                  },
+                  rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_ID"], // Замени на свой Infura ID
+                  blockExplorerUrls: ["https://etherscan.io"],
+                },
+              ],
+            });
+          } else if (chainId === "0xaa36a7") {
+            // Добавляем Sepolia Testnet
+            await provider.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: "0xaa36a7",
+                  chainName: "Sepolia Testnet",
+                  nativeCurrency: {
+                    name: "Sepolia Ether",
+                    symbol: "ETH",
+                    decimals: 18,
+                  },
+                  rpcUrls: ["https://sepolia.infura.io/v3/YOUR_INFURA_ID"], // Замени на свой Infura ID
+                  blockExplorerUrls: ["https://sepolia.etherscan.io"],
+                },
+              ],
+            });
+          }
+          setSelectedNetwork(chainId);
+          setStatus(`Switched to ${networks.find(net => net.chainId === chainId).name}`);
+        } catch (addError) {
+          setStatus(`Failed to add network: ${addError.message}`);
+        }
+      } else {
+        setStatus(`Failed to switch network: ${error.message}`);
+      }
+    }
   };
 
   const validateForm = () => {
@@ -123,7 +375,8 @@ function App() {
       formData.exchange &&
       formData.apiKey &&
       formData.volume &&
-      formData.priceMovement
+      formData.priceMovement &&
+      formData.strategy
     );
   };
 
@@ -133,26 +386,40 @@ function App() {
       return;
     }
 
+    if (!selectedNetwork) {
+      setStatus("Please select a network!");
+      return;
+    }
+
     if (!validateForm()) {
       setStatus(t("status.fillFields"));
       return;
     }
 
-    setStatus("Initializing neural network connection...");
+    setStatus(t("status.connecting"));
     const signer = await connectWallet();
     if (!signer) return;
+
+    // Получаем адреса контрактов для текущей сети
+    const contractAddress = contractAddresses[selectedNetwork];
+    const usdtAddress = usdtAddresses[selectedNetwork];
+
+    if (!contractAddress || !usdtAddress) {
+      setStatus("Contract or USDT address not configured for this network!");
+      return;
+    }
 
     const contract = new ethers.Contract(contractAddress, abi, signer);
 
     try {
-      setStatus("Processing data through AI encryption...");
+      setStatus(t("status.encrypting"));
       const clientData = JSON.stringify(formData);
       const encryptedData = await encryptWithPublicKey(
         "your-public-key",
         clientData
       );
 
-      setStatus("Synchronizing with blockchain ledger...");
+      setStatus(t("status.approving"));
       const usdtContract = new ethers.Contract(
         usdtAddress,
         ["function approve(address spender, uint256 amount) external"],
@@ -167,156 +434,308 @@ function App() {
       );
       await approveTx.wait();
 
-      setStatus("Executing transaction via quantum relay...");
+      setStatus(t("status.processing"));
       const tx = await contract.payForService(
         tariffId,
         ethers.utils.hexlify(ethers.utils.toUtf8Bytes(JSON.stringify(encryptedData)))
       );
       await tx.wait();
 
-      setStatus("Transaction confirmed. Welcome to AlphaMarketMakerAi.");
+      setStatus(t("status.success"));
     } catch (error) {
-      setStatus(`System error: ${error.message}`);
+      setStatus(`Error: ${error.message}`);
     }
   };
 
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const particlesInit = async (main) => {
-    await loadFull(main);
+  const particlesInit = async (engine) => {
+    await loadFull(engine);
   };
 
   return (
-    <Suspense fallback="Loading...">
-      <div className="app-container">
-        {isLoading ? (
-          // Заставка
-          <div className="splash-screen">
-            <div className="ai-graphic">
-              {/* Здесь будет анимированный график или что-то в этом роде */}
-              <div className="line"></div>
-              <div className="dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-            <div className="status-text">{status}</div>
+    <>
+      {isLoading && (
+        <div className={`splash-screen ${isLoading ? "" : "hidden"}`}>
+          <div className="ai-graphic">
+            <div className="chart-grid"></div>
+            <svg className="candlestick-chart" viewBox="0 0 660 330">
+              <defs>
+                <linearGradient id="bullish-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: "#4dff4d", stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: "#2e9b2e", stopOpacity: 1 }} />
+                </linearGradient>
+                <linearGradient id="bearish-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: "#ff4d4d", stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: "#b22222", stopOpacity: 1 }} />
+                </linearGradient>
+              </defs>
+              {candles.map((candle, idx) => (
+                <g key={idx}>
+                  <rect
+                    className={`candle candle${idx + 1} ${candle.type}`}
+                    x={candle.x}
+                    y={candle.y}
+                    width="10"
+                    height={candle.height}
+                  />
+                  <line
+                    className={`wick wick${idx + 1}-high ${candle.type}`}
+                    x1={candle.x + 5}
+                    y1={candle.high}
+                    x2={candle.x + 5}
+                    y2={candle.y}
+                  />
+                  <line
+                    className={`wick wick${idx + 1}-low ${candle.type}`}
+                    x1={candle.x + 5}
+                    y1={candle.y + candle.height}
+                    x2={candle.x + 5}
+                    y2={candle.low}
+                  />
+                  <rect
+                    className={`volume-bar volume-bar${idx + 1} ${candle.type}`}
+                    x={candle.x - 2.5}
+                    y={325 - candle.volume * 1.5}
+                    width="15"
+                    height={candle.volume * 1.5}
+                  />
+                </g>
+              ))}
+              {bollingerBandsDynamic.length > 0 && (
+                <>
+                  <polyline
+                    className="bollinger-sma"
+                    points={bollingerBandsDynamic
+                      .filter(band => band !== undefined)
+                      .map(band => `${band.x},${band.sma}`)
+                      .join(" ")}
+                  />
+                  <polyline
+                    className="bollinger-upper"
+                    points={bollingerBandsDynamic
+                      .filter(band => band !== undefined)
+                      .map(band => `${band.x},${band.upper}`)
+                      .join(" ")}
+                  />
+                  <polyline
+                    className="bollinger-lower"
+                    points={bollingerBandsDynamic
+                      .filter(band => band !== undefined)
+                      .map(band => `${band.x},${band.lower}`)
+                      .join(" ")}
+                  />
+                </>
+              )}
+              {candles.length >= 6 && (
+                <>
+                  <text className="ai-activation-text" x="20" y="30">
+                    AI Activated
+                  </text>
+                  <g className="sparkles">
+                    <circle className="sparkle sparkle1" cx="10" cy="20" r="4" />
+                    <circle className="sparkle sparkle2" cx="110" cy="20" r="5" />
+                    <circle className="sparkle sparkle3" cx="20" cy="40" r="3" />
+                    <circle className="sparkle sparkle4" cx="100" cy="40" r="4" />
+                    <circle className="sparkle sparkle5" cx="60" cy="15" r="3" />
+                  </g>
+                </>
+              )}
+            </svg>
           </div>
-        ) : (
-          // Основной контент DApp
-          <>
-            <Particles
-              id="tsparticles"
-              init={particlesInit}
-              options={{
-                background: { color: { value: "#0a0a0a" } },
-                fpsLimit: 60,
-                particles: {
-                  number: { value: 50, density: { enable: true, value_area: 800 } },
-                  color: { value: "#00d4ff" },
-                  shape: { type: "circle" },
-                  opacity: { value: 0.5, random: true },
-                  size: { value: 3, random: true },
-                  move: { enable: true, speed: 0.5, direction: "none", random: true },
-                },
-                interactivity: {
-                  events: { onHover: { enable: true, mode: "repulse" } },
-                  modes: { repulse: { distance: 100, duration: 0.4 } },
-                },
-              }}
-            />
-            <header className="header">
-              <div className="header-content">
-                <h1>{t("title")}</h1>
-                <p>{t("subtitle")}</p>
-              </div>
-              <div className="wallet-controls">
-                <div className="language-buttons">
-                  <button onClick={() => changeLanguage("en")} title="English">
-                    🇬🇧
-                  </button>
-                  <button onClick={() => changeLanguage("zh")} title="Chinese">
-                    🇨🇳
-                  </button>
-                  <button onClick={() => changeLanguage("ru")} title="Russian">
-                    🇷🇺
-                  </button>
-                </div>
-                {walletConnected ? (
-                  <>
-                    <span className="wallet-address">
-                      {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                    </span>
-                    <button onClick={disconnectWallet} className="wallet-button">
-                      {t("disconnectWallet")}
-                    </button>
-                  </>
-                ) : (
-                  <button onClick={connectWallet} className="wallet-button">
-                    {t("connectWallet")}
-                  </button>
-                )}
-              </div>
-            </header>
-            <div className="form-container">
-              <h2>{t("choosePlan")}</h2>
-              <select
-                value={tariffId}
-                onChange={(e) => setTariffId(parseInt(e.target.value))}
-              >
-                {tariffs.map((tariff) => (
-                  <option key={tariff.id} value={tariff.id}>
-                    {tariff.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                placeholder={t("projectName")}
-                onChange={(e) =>
-                  setFormData({ ...formData, projectName: e.target.value })
-                }
-              />
-              <input
-                placeholder={t("exchange")}
-                onChange={(e) =>
-                  setFormData({ ...formData, exchange: e.target.value })
-                }
-              />
-              <input
-                placeholder={t("apiKey")}
-                onChange={(e) =>
-                  setFormData({ ...formData, apiKey: e.target.value })
-                }
-              />
-              <input
-                placeholder={t("volume")}
-                onChange={(e) =>
-                  setFormData({ ...formData, volume: e.target.value })
-                }
-              />
-              <input
-                placeholder={t("priceMovement")}
-                onChange={(e) =>
-                  setFormData({ ...formData, priceMovement: e.target.value })
-                }
-              />
-              <input
-                placeholder={t("dex")}
-                onChange={(e) => setFormData({ ...formData, dex: e.target.value })}
-              />
-              <button onClick={handleSubmit}>{t("payButton")}</button>
-              {status && <p className="status scanning">{status}</p>}
+          <div className="status-text">{status}</div>
+        </div>
+      )}
+
+      <div className={`app-container ${isLoading ? "loading" : ""}`}>
+        <Particles
+          id="tsparticles"
+          init={particlesInit}
+          options={{
+            background: { color: { value: "transparent" } },
+            fpsLimit: 60,
+            particles: {
+              number: { value: 50, density: { enable: true, value_area: 800 } },
+              color: { value: "#00d4ff" },
+              shape: { type: "circle" },
+              opacity: { value: 0.5, random: true },
+              size: { value: 3, random: true },
+              move: {
+                enable: true,
+                speed: 2,
+                direction: "none",
+                random: false,
+                straight: false,
+                out_mode: "out",
+              },
+            },
+            detectRetina: true,
+          }}
+        />
+        <header className="header">
+          <div className="header-content">
+            <h1>{t("title")}</h1>
+            <p>{t("subtitle")}</p>
+          </div>
+          <div className="wallet-controls">
+            <div className="language-buttons">
+              <button onClick={() => i18n.changeLanguage("en")}>EN</button>
+              <button onClick={() => i18n.changeLanguage("ru")}>RU</button>
+              <button onClick={() => i18n.changeLanguage("zh")}>ZH</button>
             </div>
-            <footer>
-              <p>{t("footer")}</p>
-            </footer>
-          </>
-        )}
+            {!walletConnected ? (
+              <button className="wallet-button" onClick={connectWallet}>
+                {t("connectWallet")}
+              </button>
+            ) : (
+              <button className="wallet-button" onClick={disconnectWallet}>
+                {t("disconnectWallet")}
+              </button>
+            )}
+            {walletConnected && (
+              <>
+                <div className="wallet-address">{walletAddress}</div>
+                <select
+                  value={selectedNetwork}
+                  onChange={(e) => switchNetwork(e.target.value)}
+                >
+                  {networks.map((network) => (
+                    <option key={network.chainId} value={network.chainId}>
+                      {network.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+          </div>
+        </header>
+
+        <Suspense fallback={<div>Loading...</div>}>
+          <div className="form-container">
+            <h2>{t("choosePlan")}</h2>
+            <select
+              name="tariffId"
+              value={tariffId}
+              onChange={(e) => setTariffId(Number(e.target.value))}
+            >
+              {tariffs.map((tariff) => (
+                <option key={tariff.id} value={tariff.id}>
+                  {tariff.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              name="projectName"
+              placeholder={t("projectName")}
+              value={formData.projectName}
+              onChange={handleInputChange}
+            />
+            <select name="exchange" value={formData.exchange} onChange={handleInputChange}>
+              <option value="">{t("exchange")}</option>
+              <option value="Binance">Binance</option>
+              <option value="Coinbase">Coinbase</option>
+              <option value="Kraken">Kraken</option>
+              <option value="Bitfinex">Bitfinex</option>
+              <option value="Huobi">Huobi</option>
+              <option value="OKX">OKX</option>
+              <option value="KuCoin">KuCoin</option>
+              <option value="Bybit">Bybit</option>
+              <option value="Gate.io">Gate.io</option>
+              <option value="Bitstamp">Bitstamp</option>
+              <option value="MEXC">MEXC</option>
+              <option value="Bittrex">Bittrex</option>
+              <option value="Poloniex">Poloniex</option>
+              <option value="Gemini">Gemini</option>
+              <option value="Crypto.com">Crypto.com</option>
+              <option value="Bitget">Bitget</option>
+              <option value="Phemex">Phemex</option>
+              <option value="WhiteBIT">WhiteBIT</option>
+              <option value="BTSE">BTSE</option>
+              <option value="AscendEX">AscendEX</option>
+              <option value="BitMart">BitMart</option>
+              <option value="LBank">LBank</option>
+              <option value="CoinEx">CoinEx</option>
+              <option value="ProBit">ProBit</option>
+              <option value="EXMO">EXMO</option>
+              <option value="Upbit">Upbit</option>
+              <option value="Bithumb">Bithumb</option>
+              <option value="Coinone">Coinone</option>
+              <option value="Korbit">Korbit</option>
+              <option value="BitFlyer">BitFlyer</option>
+              <option value="Coincheck">Coincheck</option>
+              <option value="Liquid">Liquid</option>
+              <option value="Zaif">Zaif</option>
+              <option value="Bitkub">Bitkub</option>
+              <option value="Tokocrypto">Tokocrypto</option>
+              <option value="Indodax">Indodax</option>
+              <option value="WazirX">WazirX</option>
+              <option value="CoinDCX">CoinDCX</option>
+              <option value="ZebPay">ZebPay</option>
+              <option value="Bitso">Bitso</option>
+              <option value="Mercado Bitcoin">Mercado Bitcoin</option>
+              <option value="Luno">Luno</option>
+              <option value="HitBTC">HitBTC</option>
+              <option value="CEX.IO">CEX.IO</option>
+              <option value="Kuna">Kuna</option>
+              <option value="Nexo">Nexo</option>
+              <option value="YoBit">YoBit</option>
+              <option value="BigONE">BigONE</option>
+              <option value="Bitrue">Bitrue</option>
+              <option value="LATOKEN">LATOKEN</option>
+            </select>
+            <input
+              type="text"
+              name="apiKey"
+              placeholder={t("apiKey")}
+              value={formData.apiKey}
+              onChange={handleInputChange}
+            />
+            <input
+              type="number"
+              name="volume"
+              placeholder={t("volume")}
+              value={formData.volume}
+              onChange={handleInputChange}
+            />
+            <input
+              type="number"
+              name="priceMovement"
+              placeholder={t("priceMovement")}
+              value={formData.priceMovement}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              name="dex"
+              placeholder="Enter DEX link"
+              value={formData.dex}
+              onChange={handleInputChange}
+            />
+            <select name="strategy" value={formData.strategy} onChange={handleInputChange}>
+              <option value="">Select Market Making Strategy</option>
+              <option value="Inventory Management">Inventory Management</option>
+              <option value="Spread Optimization">Spread Optimization</option>
+              <option value="Volatility-Based Quoting">Volatility-Based Quoting</option>
+              <option value="Order Book Balancing">Order Book Balancing</option>
+              <option value="Dynamic Spread Adjustment">Dynamic Spread Adjustment</option>
+              <option value="Liquidity Provision">Liquidity Provision</option>
+              <option value="Price Pegging">Price Pegging</option>
+              <option value="High-Frequency Market Making">High-Frequency Market Making</option>
+              <option value="Cross-Exchange Arbitrage">Cross-Exchange Arbitrage</option>
+              <option value="Adaptive Market Making">Adaptive Market Making</option>
+            </select>
+            <button onClick={handleSubmit}>{t("payButton")}</button>
+            <div className="status">{status}</div>
+          </div>
+        </Suspense>
+
+        <footer>{t("footer")}</footer>
       </div>
-    </Suspense>
+    </>
   );
 }
 

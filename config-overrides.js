@@ -10,15 +10,16 @@ module.exports = override(
       "buffer": require.resolve("buffer/"),
       "vm": require.resolve("vm-browserify"),
       "process": require.resolve("process/browser"),
-      "http": require.resolve("stream-http"),         // Добавляем для http
-      "https": require.resolve("https-browserify"),   // Добавляем для https
-      "os": require.resolve("os-browserify/browser")  // Добавляем для os
+      "http": require.resolve("stream-http"),
+      "https": require.resolve("https-browserify"),
+      "os": require.resolve("os-browserify/browser"),
+      "url": require.resolve("url/") // Добавляем полифилл для url
     }
   }),
   addWebpackPlugin(
     new webpack.ProvidePlugin({
       process: 'process/browser',
-      Buffer: ['buffer', 'Buffer'] // Делаем Buffer глобальным
+      Buffer: ['buffer', 'Buffer']
     })
   )
 );

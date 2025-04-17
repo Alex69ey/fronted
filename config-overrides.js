@@ -13,7 +13,8 @@ module.exports = override(
       "http": require.resolve("stream-http"),
       "https": require.resolve("https-browserify"),
       "os": require.resolve("os-browserify/browser"),
-      "url": require.resolve("url/") // Добавляем полифилл для url
+      "url": require.resolve("url/"),
+      "path": require.resolve("path-browserify") // Полифилл для path
     }
   }),
   addWebpackPlugin(

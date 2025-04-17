@@ -1,61 +1,62 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { ethers } from "ethers";
-import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider"; // WalletConnect v1
-import { EthereumProvider } from "@walletconnect/ethereum-provider"; // WalletConnect v2
+import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
 import { encryptWithPublicKey } from "eth-crypto";
 import { useTranslation } from "react-i18next";
-import Particles from "react-tsparticles";
-import { loadFull } from "tsparticles";
+import { Particles } from "@tsparticles/react"; // Импортируем новый компонент
+import { loadSlim } from "@tsparticles/slim"; // Импортируем loadSlim вместо loadFull
 import "./App.css";
 import "./i18n";
 
 // Конфигурация Web3Modal
-const providerOptions = {
-  // WalletConnect v1 (для старых кошельков, таких как устаревшие версии Trust Wallet)
-  walletconnect: {
-    package: WalletConnectProvider,
-    options: {
-      infuraId: "YOUR_INFURA_ID", // Замени на свой Infura ID
-      qrcode: false,
-      qrcodeModalOptions: {
-        mobileLinks: ["trust"],
-      },
-    },
-  },
-  // WalletConnect v2 (для новых кошельков)
-  walletconnect2: {
-    package: EthereumProvider,
-    options: {
-      projectId: "ddba0f009aa0ad5d1d48ab7bc0a8dec8", // Твой projectId
-      chains: [1],
-      showQrModal: true, // Включили QR-код
-      // mobileLinks: ["trust"], // Закомментировали для теста
-      methods: ["eth_sendTransaction", "eth_sign"],
-      events: ["chainChanged", "accountsChanged"],
-      rpcMap: {
-        1: "https://mainnet.infura.io/v3/YOUR_INFURA_ID",
-        56: "https://bsc-dataseed.binance.org/",
-        11155111: "https://sepolia.infura.io/v3/YOUR_INFURA_ID",
-      },
-    },
-  },
-  injected: {
-    display: {
-      name: "MetaMask",
-      description: "Connect with MetaMask in your browser",
-    },
-    package: null,
-  },
+const projectId = "ddba0f009aa0ad5d1d48ab7bc0a8dec8";
+
+const metadata = {
+  name: "Alpha Market Maker AI",
+  description: "A decentralized market maker application",
+  url: "https://your-dapp-url.com",
+  icons: ["https://your-dapp-url.com/icon.png"],
 };
 
-const web3Modal = new Web3Modal({
-  cacheProvider: true,
-  providerOptions,
-  disableInjectedProvider: false,
+const mainnet = {
+  chainId: 1,
+  name: "Ethereum",
+  currency: "ETH",
+  explorerUrl: "https://etherscan.io",
+  rpcUrl: "https://mainnet.infura.io/v3/YOUR_INFURA_ID",
+};
+
+const bsc = {
+  chainId: 56,
+  name: "BNB Smart Chain",
+  currency: "BNB",
+  explorerUrl: "https://bscscan.com",
+  rpcUrl: "https://bsc-dataseed.binance.org/",
+};
+
+const sepolia = {
+  chainId: 11155111,
+  name: "Sepolia Testnet",
+  currency: "ETH",
+  explorerUrl: "https://sepolia.etherscan.io",
+  rpcUrl: "https://sepolia.infura.io/v3/YOUR_INFURA_ID",
+};
+
+const chains = [mainnet, bsc, sepolia];
+
+const { open, close } = createWeb3Modal({
+  ethersConfig: defaultConfig({
+    metadata,
+    defaultChainId: 1,
+    enableEIP6963: true,
+    enableInjected: true,
+    enableCoinbase: true,
+    enableWalletConnect: true,
+  }),
+  chains,
+  projectId,
 });
 
-// Маппинг адресов контрактов и USDT для каждой сети
 const contractAddresses = {
   "1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS",
   "56": "0xYOUR_BSC_CONTRACT_ADDRESS",
@@ -93,6 +94,7 @@ function App() {
   const [bollingerBandsDynamic, setBollingerBandsDynamic] = useState([]);
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
 
   const networks = [
     { chainId: "1", name: "Ethereum Mainnet" },
@@ -112,7 +114,7 @@ function App() {
     { id: 9, name: "2 Months, 3 Pairs - 4500 USDT" },
     { id: 10, name: "2 Months, 4 Pairs - 5500 USDT" },
     { id: 11, name: "2 Months, 5 Pairs - 6000 USDT" },
-    { id: 12, name: "Сhange of strategy - 9 USDT" },
+    { id: 12, name: "Change of strategy - 9 USDT" },
     { id: 13, name: "Project support - 999 USDT" },
   ];
 
@@ -150,13 +152,13 @@ function App() {
     const maxWick = isFirstFive ? 8 : 30;
     const randomHighWick = Math.floor(Math.random() * (maxWick - minWick + 1)) + minWick;
     const randomLowWick = Math.floor(Math.random() * (maxWick - minWick + 1)) + minWick;
-    candle.high = candle.y + randomHighWick;
-    candle.low = (candle.type === "bullish" ? candle.y + candle.height : candle.y) - randomLowWick;
+    candle.high = candle.y - randomHighWick;
+    candle.low = (candle.type === "bullish" ? candle.y + candle.height : candle.y) + randomLowWick;
   });
 
   const calculateVolume = (candle, index) => {
     const priceRange = candle.high - candle.low;
-    const baseVolume = priceRange * 2;
+    const baseVolume = Math.abs(priceRange) * 2;
     const randomFactor = Math.random() * 0.5 + 0.75;
     let volume = baseVolume * randomFactor;
 
@@ -198,19 +200,24 @@ function App() {
     return Math.sqrt(variance);
   };
 
-  const closePrices = candleData.map(candle => 
+  const closePrices = candleData.map(candle =>
     candle.type === "bullish" ? candle.y + candle.height : candle.y
   );
 
   for (let i = 0; i < candleData.length; i++) {
+    if (!candleData[i]) {
+      // eslint-disable-next-line no-console
+      console.error(`candleData[${i}] is undefined`);
+      continue;
+    }
     let sma;
     if (i < period - 1) {
       sma = calculateSMA(closePrices, 0, period);
     } else {
       sma = calculateSMA(closePrices, i - period + 1, period);
     }
-    const sd = i < period - 1 
-      ? calculateSD(closePrices, 0, period, sma) 
+    const sd = i < period - 1
+      ? calculateSD(closePrices, 0, period, sma)
       : calculateSD(closePrices, i - period + 1, period, sma);
     const upperBand = sma + (sd * multiplier);
     const lowerBand = sma - (sd * multiplier);
@@ -227,6 +234,10 @@ function App() {
     let index = 0;
     const interval = setInterval(() => {
       if (index < candleData.length && candleData[index]) {
+        // eslint-disable-next-line no-console
+        console.log("Adding candle:", candleData[index]);
+        // eslint-disable-next-line no-console
+        console.log("Adding Bollinger Band:", bollingerBands[index]);
         setCandles((prev) => [...prev, candleData[index]]);
         setBollingerBandsDynamic((prev) => [...prev, bollingerBands[index]]);
         index++;
@@ -237,7 +248,6 @@ function App() {
     }, 250);
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -261,18 +271,43 @@ function App() {
 
   const connectWallet = async () => {
     try {
-      const web3Provider = await web3Modal.connect();
-      const ethersProvider = new ethers.providers.Web3Provider(web3Provider);
-      const signer = ethersProvider.getSigner();
-      const address = await signer.getAddress();
+      setStatus("Attempting to connect wallet...");
+      const walletProvider = await open();
+      if (!walletProvider) {
+        setStatus("No provider found. Please try again.");
+        return null;
+      }
 
-      setProvider(web3Provider);
+      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
+      const signerInstance = ethersProvider.getSigner();
+      const address = await signerInstance.getAddress();
+      const chainId = (await ethersProvider.getNetwork()).chainId.toString();
+
+      setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+      setProvider(ethersProvider);
+      setSigner(signerInstance);
       setWalletConnected(true);
       setWalletAddress(address);
-      setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+      setSelectedNetwork(chainId);
 
-      setSelectedNetwork(networks[2].chainId);
-      return signer;
+      walletProvider.on("accountsChanged", async (accounts) => {
+        if (accounts.length === 0) {
+          disconnectWallet();
+        } else {
+          const newSigner = ethersProvider.getSigner();
+          setWalletAddress(accounts[0]);
+          setSigner(newSigner);
+          setStatus(`Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
+        }
+      });
+
+      walletProvider.on("chainChanged", (chainId) => {
+        const newChainId = parseInt(chainId, 16).toString();
+        setSelectedNetwork(newChainId);
+        setStatus(`Switched to ${networks.find(net => net.chainId === newChainId)?.name || "Unknown Network"}`);
+      });
+
+      return signerInstance;
     } catch (error) {
       setStatus(`Connection error: ${error.message}`);
       return null;
@@ -280,15 +315,17 @@ function App() {
   };
 
   const disconnectWallet = async () => {
-    await web3Modal.clearCachedProvider();
-    if (provider?.disconnect) {
-      await provider.disconnect();
+    try {
+      await close();
+      setWalletConnected(false);
+      setWalletAddress("");
+      setSelectedNetwork("");
+      setProvider(null);
+      setSigner(null);
+      setStatus("Wallet disconnected");
+    } catch (error) {
+      setStatus(`Disconnect error: ${error.message}`);
     }
-    setWalletConnected(false);
-    setWalletAddress("");
-    setSelectedNetwork("");
-    setProvider(null);
-    setStatus("Wallet disconnected");
   };
 
   const switchNetwork = async (chainId) => {
@@ -298,66 +335,56 @@ function App() {
     }
 
     try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: `0x${parseInt(chainId).toString(16)}` }],
-      });
+      await provider.send("wallet_switchEthereumChain", [
+        { chainId: `0x${parseInt(chainId).toString(16)}` },
+      ]);
       setSelectedNetwork(chainId);
       setStatus(`Switched to ${networks.find(net => net.chainId === chainId).name}`);
     } catch (error) {
       if (error.code === 4902) {
         try {
           if (chainId === "56") {
-            await provider.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: "0x38",
-                  chainName: "BNB Smart Chain",
-                  nativeCurrency: {
-                    name: "BNB",
-                    symbol: "BNB",
-                    decimals: 18,
-                  },
-                  rpcUrls: ["https://bsc-dataseed.binance.org/"],
-                  blockExplorerUrls: ["https://bscscan.com"],
+            await provider.send("wallet_addEthereumChain", [
+              {
+                chainId: "0x38",
+                chainName: "BNB Smart Chain",
+                nativeCurrency: {
+                  name: "BNB",
+                  symbol: "BNB",
+                  decimals: 18,
                 },
-              ],
-            });
+                rpcUrls: ["https://bsc-dataseed.binance.org/"],
+                blockExplorerUrls: ["https://bscscan.com"],
+              },
+            ]);
           } else if (chainId === "1") {
-            await provider.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: "0x1",
-                  chainName: "Ethereum Mainnet",
-                  nativeCurrency: {
-                    name: "Ether",
-                    symbol: "ETH",
-                    decimals: 18,
-                  },
-                  rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_ID"],
-                  blockExplorerUrls: ["https://etherscan.io"],
+            await provider.send("wallet_addEthereumChain", [
+              {
+                chainId: "0x1",
+                chainName: "Ethereum Mainnet",
+                nativeCurrency: {
+                  name: "Ether",
+                  symbol: "ETH",
+                  decimals: 18,
                 },
-              ],
-            });
+                rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_ID"],
+                blockExplorerUrls: ["https://etherscan.io"],
+              },
+            ]);
           } else if (chainId === "11155111") {
-            await provider.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: "0xaa36a7",
-                  chainName: "Sepolia Testnet",
-                  nativeCurrency: {
-                    name: "Sepolia Ether",
-                    symbol: "ETH",
-                    decimals: 18,
-                  },
-                  rpcUrls: ["https://sepolia.infura.io/v3/YOUR_INFURA_ID"],
-                  blockExplorerUrls: ["https://sepolia.etherscan.io"],
+            await provider.send("wallet_addEthereumChain", [
+              {
+                chainId: "0xaa36a7",
+                chainName: "Sepolia Testnet",
+                nativeCurrency: {
+                  name: "Sepolia Ether",
+                  symbol: "ETH",
+                  decimals: 18,
                 },
-              ],
-            });
+                rpcUrls: ["https://sepolia.infura.io/v3/YOUR_INFURA_ID"],
+                blockExplorerUrls: ["https://sepolia.etherscan.io"],
+              },
+            ]);
           }
           setSelectedNetwork(chainId);
           setStatus(`Switched to ${networks.find(net => net.chainId === chainId).name}`);
@@ -398,8 +425,10 @@ function App() {
     }
 
     setStatus(t("status.connecting"));
-    const signer = await connectWallet();
-    if (!signer) return;
+    if (!signer) {
+      const newSigner = await connectWallet();
+      if (!newSigner) return;
+    }
 
     const contractAddress = contractAddresses[selectedNetwork];
     const usdtAddress = usdtAddresses[selectedNetwork];
@@ -453,7 +482,7 @@ function App() {
   };
 
   const particlesInit = async (engine) => {
-    await loadFull(engine);
+    await loadSlim(engine); // Используем loadSlim вместо loadFull
   };
 
   return (
@@ -473,38 +502,41 @@ function App() {
                   <stop offset="100%" style={{ stopColor: "#b22222", stopOpacity: 1 }} />
                 </linearGradient>
               </defs>
-              {candles.map((candle, idx) => (
-                <g key={idx}>
-                  <rect
-                    className={`candle candle${idx + 1} ${candle.type}`}
-                    x={candle.x}
-                    y={candle.y}
-                    width="10"
-                    height={candle.height}
-                  />
-                  <line
-                    className={`wick wick${idx + 1}-high ${candle.type}`}
-                    x1={candle.x + 5}
-                    y1={candle.high}
-                    x2={candle.x + 5}
-                    y2={candle.y}
-                  />
-                  <line
-                    className={`wick wick${idx + 1}-low ${candle.type}`}
-                    x1={candle.x + 5}
-                    y1={candle.y + candle.height}
-                    x2={candle.x + 5}
-                    y2={candle.low}
-                  />
-                  <rect
-                    className={`volume-bar volume-bar${idx + 1} ${candle.type}`}
-                    x={candle.x - 2.5}
-                    y={325 - candle.volume * 1.5}
-                    width="15"
-                    height={candle.volume * 1.5}
-                  />
-                </g>
-              ))}
+              {candles.map((candle, idx) => {
+                if (!candle || !candle.type) return null;
+                return (
+                  <g key={idx}>
+                    <rect
+                      className={`candle candle${idx + 1} ${candle.type}`}
+                      x={candle.x}
+                      y={candle.y}
+                      width="10"
+                      height={candle.height}
+                    />
+                    <line
+                      className={`wick wick${idx + 1}-high ${candle.type}`}
+                      x1={candle.x + 5}
+                      y1={candle.high}
+                      x2={candle.x + 5}
+                      y2={candle.y}
+                    />
+                    <line
+                      className={`wick wick${idx + 1}-low ${candle.type}`}
+                      x1={candle.x + 5}
+                      y1={candle.y + candle.height}
+                      x2={candle.x + 5}
+                      y2={candle.low}
+                    />
+                    <rect
+                      className={`volume-bar volume-bar${idx + 1} ${candle.type}`}
+                      x={candle.x - 2.5}
+                      y={325 - candle.volume * 1.5}
+                      width="15"
+                      height={candle.volume * 1.5}
+                    />
+                  </g>
+                );
+              })}
               {bollingerBandsDynamic.length > 0 && (
                 <>
                   <polyline
@@ -558,18 +590,18 @@ function App() {
             background: { color: { value: "transparent" } },
             fpsLimit: 60,
             particles: {
-              number: { value: 50, density: { enable: true, value_area: 800 } },
+              number: { value: 50, density: { enable: true, area: 800 } }, // Заменили value_area на area
               color: { value: "#00d4ff" },
               shape: { type: "circle" },
-              opacity: { value: 0.5, random: true },
-              size: { value: 3, random: true },
+              opacity: { value: { min: 0.1, max: 0.5 }, random: true }, // Обновили формат opacity
+              size: { value: { min: 1, max: 3 }, random: true }, // Обновили формат size
               move: {
                 enable: true,
-                speed: 2,
+                speed: { min: 1, max: 2 }, // Обновили speed
                 direction: "none",
                 random: false,
                 straight: false,
-                out_mode: "out",
+                outModes: { default: "out" }, // Заменили out_mode на outModes
               },
             },
             detectRetina: true,

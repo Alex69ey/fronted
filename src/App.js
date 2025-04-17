@@ -29,8 +29,8 @@ const providerOptions = {
     options: {
       projectId: "ddba0f009aa0ad5d1d48ab7bc0a8dec8", // Твой projectId
       chains: [1],
-      showQrModal: false,
-      mobileLinks: ["trust"],
+      showQrModal: true, // Включили QR-код
+      // mobileLinks: ["trust"], // Закомментировали для теста
       methods: ["eth_sendTransaction", "eth_sign"],
       events: ["chainChanged", "accountsChanged"],
       rpcMap: {

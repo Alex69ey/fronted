@@ -119,6 +119,7 @@ body {
   align-items: center;
   gap: 10px;
   margin-top: 10px;
+  width: 100%;
 }
 
 .language-buttons {
@@ -149,6 +150,14 @@ body {
   transform: scale(1.1);
 }
 
+.wallet-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .wallet-button {
   padding: 10px 20px;
   background: #00d4ff;
@@ -171,7 +180,6 @@ body {
   font-size: 0.9em;
   text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
   word-break: break-word;
-  margin-top: 5px;
 }
 
 .form-container {
@@ -308,8 +316,8 @@ footer {
 
 .ai-graphic {
   position: relative;
-  width: 660px; /* Увеличено на 10% */
-  height: 330px; /* Увеличено на 10% */
+  width: 660px;
+  height: 330px;
   margin-bottom: 20px;
 }
 
@@ -317,6 +325,7 @@ footer {
   font-size: 18px;
   color: #00d4ff;
   text-align: center;
+  word-break: break-word;
 }
 
 .chart-grid {
@@ -368,7 +377,6 @@ footer {
   animation: draw-wick 0.1s forwards;
 }
 
-/* Стили для столбцов объёма */
 .volume-bar {
   opacity: 0;
 }
@@ -385,7 +393,6 @@ footer {
   animation: draw-volume 0.1s forwards;
 }
 
-/* Стили для линий Боллинджера */
 .bollinger-sma {
   fill: none;
   stroke: #00d4ff;
@@ -409,7 +416,6 @@ footer {
   animation: fadeIn 0.1s forwards;
 }
 
-/* Стили для искр вокруг текста */
 .sparkles {
   pointer-events: none;
 }
@@ -452,31 +458,6 @@ footer {
 .candle23, .wick23-high, .wick23-low, .volume-bar23 { animation-delay: 5.5s; }
 .candle24, .wick24-high, .wick24-low, .volume-bar24 { animation-delay: 5.75s; }
 .candle25, .wick25-high, .wick25-low, .volume-bar25 { animation-delay: 6s; }
-
-/* Градиенты для свечей */
-.candlestick-chart defs {
-  linearGradient#bullish-gradient {
-    stop:nth-child(1) {
-      stop-color: #4dff4d;
-      stop-opacity: 1;
-    }
-    stop:nth-child(2) {
-      stop-color: #2e9b2e;
-      stop-opacity: 1;
-    }
-  }
-
-  linearGradient#bearish-gradient {
-    stop:nth-child(1) {
-      stop-color: #ff4d4d;
-      stop-opacity: 1;
-    }
-    stop:nth-child(2) {
-      stop-color: #b22222;
-      stop-opacity: 1;
-    }
-  }
-}
 
 @keyframes glow {
   0% { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
@@ -575,78 +556,155 @@ footer {
 }
 
 @media (max-width: 576px) {
+  body {
+    font-size: 14px; /* Уменьшаем базовый размер шрифта */
+  }
+
   .app-container {
     padding: 10px;
   }
 
   .header {
     padding: 15px;
+    max-width: 100%; /* Убираем фиксированную ширину */
+    margin-bottom: 15px;
   }
 
   .header-content h1 {
-    font-size: 1.9em;
+    font-size: 1.5em; /* Уменьшаем заголовок */
+    line-height: 1.2;
   }
 
   .header-content p {
-    font-size: 1em;
+    font-size: 0.9em; /* Уменьшаем подзаголовок */
+    line-height: 1.2;
   }
 
   .wallet-controls {
     flex-direction: column;
-    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
   }
 
   .language-buttons {
-    margin-bottom: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+
+  .language-buttons button {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8em;
+    padding: 6px;
+  }
+
+  .wallet-actions {
+    flex-direction: row;
+    gap: 8px;
   }
 
   .wallet-button {
+    padding: 8px 16px;
     font-size: 0.9em;
   }
 
   .wallet-address {
     font-size: 0.8em;
+    max-width: 150px; /* Ограничиваем ширину адреса */
+    text-align: center;
+  }
+
+  .wallet-controls select {
+    width: 100%;
+    max-width: 200px;
+    padding: 8px;
+    font-size: 0.9em;
   }
 
   .form-container {
     padding: 15px;
+    max-width: 100%; /* Убираем фиксированную ширину */
   }
 
   .form-container h2 {
-    font-size: 1.4em;
+    font-size: 1.3em;
+    margin-bottom: 15px;
   }
 
-  select, input, button {
+  select, input {
     padding: 10px;
     font-size: 0.9em;
+    margin: 8px 0;
+  }
+
+  select {
+    padding-right: 30px;
+    background-position: right 10px center;
+  }
+
+  button {
+    padding: 12px;
+    font-size: 1em;
   }
 
   .status {
     font-size: 0.8em;
+    margin-top: 10px;
   }
 
   footer {
-    font-size: 0.75em;
+    font-size: 0.7em;
+    padding: 8px;
+  }
+
+  .splash-screen {
+    padding: 10px;
+  }
+
+  .ai-graphic {
+    width: 100%;
+    max-width: 300px; /* Уменьшаем график */
+    height: auto;
+    aspect-ratio: 2 / 1; /* Сохраняем пропорции */
+  }
+
+  .status-text {
+    font-size: 14px;
+    padding: 0 10px;
+  }
+
+  .ai-activation-text {
+    font-size: 12px;
+  }
+
+  .sparkle {
+    r: 3; /* Уменьшаем искры */
   }
 }
 
 @media (min-width: 577px) and (max-width: 768px) {
   .header-content h1 {
-    font-size: 2.4em;
+    font-size: 2em;
   }
 
   .form-container {
-    padding: 30px;
+    padding: 20px;
   }
 
   select, input, button {
-    font-size: 1.1em;
+    font-size: 1em;
+  }
+
+  .ai-graphic {
+    width: 500px;
+    height: 250px;
   }
 }
 
 @media (min-width: 769px) and (max-width: 992px) {
   .header-content h1 {
-    font-size: 2.6em;
+    font-size: 2.2em;
   }
 }
 

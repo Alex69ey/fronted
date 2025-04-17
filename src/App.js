@@ -17,7 +17,7 @@ const providerOptions = {
       infuraId: "YOUR_INFURA_ID", // Замени на свой Infura ID
       qrcode: true,
       qrcodeModalOptions: {
-        mobileLinks: ["metamask", "trust", "rainbow"], // Поддержка MetaMask, Trust Wallet
+        mobileLinks: ["metamask", "trust", "rainbow"],
       },
     },
   },
@@ -37,15 +37,15 @@ const web3Modal = new Web3Modal({
 
 // Маппинг адресов контрактов и USDT для каждой сети
 const contractAddresses = {
-  "0x1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS", // Замени на адрес контракта в Ethereum Mainnet
-  "0x38": "0xYOUR_BSC_CONTRACT_ADDRESS", // Замени на адрес контракта в BSC
-  "0xaa36a7": "0xYOUR_SEPOLIA_CONTRACT_ADDRESS", // Замени на адрес контракта в Sepolia
+  "0x1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS",
+  "0x38": "0xYOUR_BSC_CONTRACT_ADDRESS",
+  "0xaa36a7": "0xYOUR_SEPOLIA_CONTRACT_ADDRESS",
 };
 
 const usdtAddresses = {
-  "0x1": "0xdAC17F958D2ee523a2206206994597C13D831ec", // USDT в Ethereum Mainnet
-  "0x38": "0x55d398326f99059fF775485246999027B319795", // USDT в BSC
-  "0xaa36a7": "0x7169D38820dfd117C3FA1f22a697dBA58d90BA7", // Тестовый USDT в Sepolia (проверь актуальность)
+  "0x1": "0xdAC17F958D2ee523a2206206994597C13D831ec",
+  "0x38": "0x55d398326f99059fF775485246999027B319795",
+  "0xaa36a7": "0x7169D38820dfd117C3FA1f22a697dBA58d90BA7",
 };
 
 const abi = [
@@ -70,14 +70,14 @@ function App() {
   const [walletAddress, setWalletAddress] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [candles, setCandles] = useState([]);
-  const [bollingerBandsDynamic, setBollingerBandsDynamic] = useState([]); // Динамические линии Боллинджера
-  const [selectedNetwork, setSelectedNetwork] = useState(""); // Состояние для выбранной сети
-  const [provider, setProvider] = useState(null); // Сохраняем провайдер для переключения сети
+  const [bollingerBandsDynamic, setBollingerBandsDynamic] = useState([]);
+  const [selectedNetwork, setSelectedNetwork] = useState("");
+  const [provider, setProvider] = useState(null);
 
   const networks = [
-    { chainId: "0x1", name: "Ethereum Mainnet" }, // Chain ID 1
-    { chainId: "0x38", name: "BNB Smart Chain" }, // Chain ID 56 (0x38 в шестнадцатеричном формате)
-    { chainId: "0xaa36a7", name: "Sepolia Testnet" }, // Chain ID 11155111 (0xaa36a7 в шестнадцатеричном формате)
+    { chainId: "0x1", name: "Ethereum Mainnet" },
+    { chainId: "0x38", name: "BNB Smart Chain" },
+    { chainId: "0xaa36a7", name: "Sepolia Testnet" },
   ];
 
   const tariffs = [
@@ -96,7 +96,6 @@ function App() {
     { id: 13, name: "Project support - 999 USDT" },
   ];
 
-  // Данные свечей
   const candleData = [
     { x: 20, y: 238, height: 5, type: "bullish" },
     { x: 40, y: 240, height: 6, type: "bearish" },
@@ -125,18 +124,16 @@ function App() {
     { x: 500, y: 20, height: 22, type: "bullish" },
   ];
 
-  // Добавляем случайные фитили с разными диапазонами
   candleData.forEach((candle, index) => {
     const isFirstFive = index < 5;
-    const minWick = isFirstFive ? 2 : 10; // Минимальная длина фитиля
-    const maxWick = isFirstFive ? 8 : 30; // Максимальная длина фитиля
+    const minWick = isFirstFive ? 2 : 10;
+    const maxWick = isFirstFive ? 8 : 30;
     const randomHighWick = Math.floor(Math.random() * (maxWick - minWick + 1)) + minWick;
     const randomLowWick = Math.floor(Math.random() * (maxWick - minWick + 1)) + minWick;
-    candle.high = candle.y + randomHighWick; // Верхний фитиль
-    candle.low = (candle.type === "bullish" ? candle.y + candle.height : candle.y) - randomLowWick; // Нижний фитиль
+    candle.high = candle.y + randomHighWick;
+    candle.low = (candle.type === "bullish" ? candle.y + candle.height : candle.y) - randomLowWick;
   });
 
-  // Рассчитаем объём на основе разницы между high и low с добавлением случайности
   const calculateVolume = (candle, index) => {
     const priceRange = candle.high - candle.low;
     const baseVolume = priceRange * 2;
@@ -154,44 +151,37 @@ function App() {
     return Math.round(volume);
   };
 
-  // Добавляем объём в candleData
   candleData.forEach((candle, index) => {
     candle.volume = calculateVolume(candle, index);
   });
 
-  // Вручную корректируем объёмы для свеч 6, 7, 8 (уменьшаем) и 23, 24, 25 (увеличиваем)
-  candleData[5].volume = 5; // Свеча 6
-  candleData[6].volume = 7; // Свеча 7
-  candleData[7].volume = 10; // Свеча 8
-  candleData[22].volume = 50; // Свеча 23
-  candleData[23].volume = 55; // Свеча 24
-  candleData[24].volume = 60; // Свеча 25
+  candleData[5].volume = 5;
+  candleData[6].volume = 7;
+  candleData[7].volume = 10;
+  candleData[22].volume = 50;
+  candleData[23].volume = 55;
+  candleData[24].volume = 60;
 
-  // Расчёт линий Боллинджера (предварительный, для всех свечей)
-  const period = 5; // Период для SMA
-  const multiplier = 2; // Множитель для стандартного отклонения
+  const period = 5;
+  const multiplier = 2;
   const bollingerBands = [];
 
-  // Функция для расчёта SMA
   const calculateSMA = (data, start, period) => {
     const slice = data.slice(start, start + period);
     const sum = slice.reduce((acc, val) => acc + val, 0);
     return sum / period;
   };
 
-  // Функция для расчёта стандартного отклонения
   const calculateSD = (data, start, period, mean) => {
     const slice = data.slice(start, start + period);
     const variance = slice.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / period;
     return Math.sqrt(variance);
   };
 
-  // Получаем цены закрытия для каждой свечи
   const closePrices = candleData.map(candle => 
     candle.type === "bullish" ? candle.y + candle.height : candle.y
   );
 
-  // Рассчитываем линии Боллинджера для всех свечей
   for (let i = 0; i < candleData.length; i++) {
     let sma;
     if (i < period - 1) {
@@ -213,14 +203,11 @@ function App() {
     });
   }
 
-  // Динамическое добавление свечей и линий Боллинджера (интервал 0.25 сек)
   useEffect(() => {
     let index = 0;
     const interval = setInterval(() => {
       if (index < candleData.length && candleData[index]) {
-        // Добавляем свечу
         setCandles((prev) => [...prev, candleData[index]]);
-        // Добавляем соответствующую точку линий Боллинджера
         setBollingerBandsDynamic((prev) => [...prev, bollingerBands[index]]);
         index++;
       } else {
@@ -254,22 +241,17 @@ function App() {
 
   const connectWallet = async () => {
     try {
-      // Всегда используем Web3Modal для выбора кошелька
       const web3Provider = await web3Modal.connect();
       const ethersProvider = new ethers.providers.Web3Provider(web3Provider);
       const signer = ethersProvider.getSigner();
       const address = await signer.getAddress();
 
-      // Сохраняем провайдер для переключения сети
       setProvider(web3Provider);
-
       setWalletConnected(true);
       setWalletAddress(address);
       setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
 
-      // После подключения кошелька устанавливаем сеть по умолчанию (например, Sepolia)
-      setSelectedNetwork(networks[2].chainId); // Устанавливаем Sepolia по умолчанию
-
+      setSelectedNetwork(networks[2].chainId);
       return signer;
     } catch (error) {
       setStatus(`Connection error: ${error.message}`);
@@ -300,11 +282,9 @@ function App() {
       setSelectedNetwork(chainId);
       setStatus(`Switched to ${networks.find(net => net.chainId === chainId).name}`);
     } catch (error) {
-      // Если сеть не добавлена в кошелёк, добавим её
       if (error.code === 4902) {
         try {
           if (chainId === "0x38") {
-            // Добавляем BNB Smart Chain
             await provider.request({
               method: "wallet_addEthereumChain",
               params: [
@@ -322,7 +302,6 @@ function App() {
               ],
             });
           } else if (chainId === "0x1") {
-            // Добавляем Ethereum Mainnet
             await provider.request({
               method: "wallet_addEthereumChain",
               params: [
@@ -334,13 +313,12 @@ function App() {
                     symbol: "ETH",
                     decimals: 18,
                   },
-                  rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_ID"], // Замени на свой Infura ID
+                  rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_ID"],
                   blockExplorerUrls: ["https://etherscan.io"],
                 },
               ],
             });
           } else if (chainId === "0xaa36a7") {
-            // Добавляем Sepolia Testnet
             await provider.request({
               method: "wallet_addEthereumChain",
               params: [
@@ -352,7 +330,7 @@ function App() {
                     symbol: "ETH",
                     decimals: 18,
                   },
-                  rpcUrls: ["https://sepolia.infura.io/v3/YOUR_INFURA_ID"], // Замени на свой Infura ID
+                  rpcUrls: ["https://sepolia.infura.io/v3/YOUR_INFURA_ID"],
                   blockExplorerUrls: ["https://sepolia.etherscan.io"],
                 },
               ],
@@ -400,7 +378,6 @@ function App() {
     const signer = await connectWallet();
     if (!signer) return;
 
-    // Получаем адреса контрактов для текущей сети
     const contractAddress = contractAddresses[selectedNetwork];
     const usdtAddress = usdtAddresses[selectedNetwork];
 
@@ -439,7 +416,7 @@ function App() {
         tariffId,
         ethers.utils.hexlify(ethers.utils.toUtf8Bytes(JSON.stringify(encryptedData)))
       );
-      await tx.wait();
+      await approveTx.wait();
 
       setStatus(t("status.success"));
     } catch (error) {
@@ -586,29 +563,33 @@ function App() {
               <button onClick={() => i18n.changeLanguage("ru")}>RU</button>
               <button onClick={() => i18n.changeLanguage("zh")}>ZH</button>
             </div>
-            {!walletConnected ? (
-              <button className="wallet-button" onClick={connectWallet}>
-                {t("connectWallet")}
-              </button>
-            ) : (
-              <button className="wallet-button" onClick={disconnectWallet}>
-                {t("disconnectWallet")}
-              </button>
-            )}
+            <div className="wallet-actions">
+              {!walletConnected ? (
+                <button className="wallet-button" onClick={connectWallet}>
+                  {t("connectWallet")}
+                </button>
+              ) : (
+                <>
+                  <span className="wallet-address">
+                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                  </span>
+                  <button className="wallet-button" onClick={disconnectWallet}>
+                    {t("disconnectWallet")}
+                  </button>
+                </>
+              )}
+            </div>
             {walletConnected && (
-              <>
-                <div className="wallet-address">{walletAddress}</div>
-                <select
-                  value={selectedNetwork}
-                  onChange={(e) => switchNetwork(e.target.value)}
-                >
-                  {networks.map((network) => (
-                    <option key={network.chainId} value={network.chainId}>
-                      {network.name}
-                    </option>
-                  ))}
-                </select>
-              </>
+              <select
+                value={selectedNetwork}
+                onChange={(e) => switchNetwork(e.target.value)}
+              >
+                {networks.map((network) => (
+                  <option key={network.chainId} value={network.chainId}>
+                    {network.name}
+                  </option>
+                ))}
+              </select>
             )}
           </div>
         </header>

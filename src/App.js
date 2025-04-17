@@ -1,7 +1,8 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { ethers } from "ethers";
 import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import WalletConnectProvider from "@walletconnect/web3-provider"; // WalletConnect v1
+import { EthereumProvider } from "@walletconnect/ethereum-provider"; // WalletConnect v2
 import { encryptWithPublicKey } from "eth-crypto";
 import { useTranslation } from "react-i18next";
 import Particles from "react-tsparticles";
@@ -11,13 +12,31 @@ import "./i18n";
 
 // Конфигурация Web3Modal
 const providerOptions = {
+  // WalletConnect v1 (для старых кошельков, таких как устаревшие версии Trust Wallet)
   walletconnect: {
     package: WalletConnectProvider,
     options: {
       infuraId: "YOUR_INFURA_ID", // Замени на свой Infura ID
-      qrcode: true,
+      qrcode: false,
       qrcodeModalOptions: {
-        mobileLinks: ["metamask", "trust", "rainbow"],
+        mobileLinks: ["trust"],
+      },
+    },
+  },
+  // WalletConnect v2 (для новых кошельков)
+  walletconnect2: {
+    package: EthereumProvider,
+    options: {
+      projectId: "ddba0f009aa0ad5d1d48ab7bc0a8dec8", // Твой projectId
+      chains: [1],
+      showQrModal: false,
+      mobileLinks: ["trust"],
+      methods: ["eth_sendTransaction", "eth_sign"],
+      events: ["chainChanged", "accountsChanged"],
+      rpcMap: {
+        1: "https://mainnet.infura.io/v3/YOUR_INFURA_ID",
+        56: "https://bsc-dataseed.binance.org/",
+        11155111: "https://sepolia.infura.io/v3/YOUR_INFURA_ID",
       },
     },
   },
@@ -33,19 +52,20 @@ const providerOptions = {
 const web3Modal = new Web3Modal({
   cacheProvider: true,
   providerOptions,
+  disableInjectedProvider: false,
 });
 
 // Маппинг адресов контрактов и USDT для каждой сети
 const contractAddresses = {
-  "0x1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS",
-  "0x38": "0xYOUR_BSC_CONTRACT_ADDRESS",
-  "0xaa36a7": "0xYOUR_SEPOLIA_CONTRACT_ADDRESS",
+  "1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS",
+  "56": "0xYOUR_BSC_CONTRACT_ADDRESS",
+  "11155111": "0xYOUR_SEPOLIA_CONTRACT_ADDRESS",
 };
 
 const usdtAddresses = {
-  "0x1": "0xdAC17F958D2ee523a2206206994597C13D831ec",
-  "0x38": "0x55d398326f99059fF775485246999027B319795",
-  "0xaa36a7": "0x7169D38820dfd117C3FA1f22a697dBA58d90BA7",
+  "1": "0xdAC17F958D2ee523a2206206994597C13D831ec",
+  "56": "0x55d398326f99059fF775485246999027B319795",
+  "11155111": "0x7169D38820dfd117C3FA1f22a697dBA58d90BA7",
 };
 
 const abi = [
@@ -75,9 +95,9 @@ function App() {
   const [provider, setProvider] = useState(null);
 
   const networks = [
-    { chainId: "0x1", name: "Ethereum Mainnet" },
-    { chainId: "0x38", name: "BNB Smart Chain" },
-    { chainId: "0xaa36a7", name: "Sepolia Testnet" },
+    { chainId: "1", name: "Ethereum Mainnet" },
+    { chainId: "56", name: "BNB Smart Chain" },
+    { chainId: "11155111", name: "Sepolia Testnet" },
   ];
 
   const tariffs = [
@@ -261,6 +281,9 @@ function App() {
 
   const disconnectWallet = async () => {
     await web3Modal.clearCachedProvider();
+    if (provider?.disconnect) {
+      await provider.disconnect();
+    }
     setWalletConnected(false);
     setWalletAddress("");
     setSelectedNetwork("");
@@ -277,14 +300,14 @@ function App() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId }],
+        params: [{ chainId: `0x${parseInt(chainId).toString(16)}` }],
       });
       setSelectedNetwork(chainId);
       setStatus(`Switched to ${networks.find(net => net.chainId === chainId).name}`);
     } catch (error) {
       if (error.code === 4902) {
         try {
-          if (chainId === "0x38") {
+          if (chainId === "56") {
             await provider.request({
               method: "wallet_addEthereumChain",
               params: [
@@ -301,7 +324,7 @@ function App() {
                 },
               ],
             });
-          } else if (chainId === "0x1") {
+          } else if (chainId === "1") {
             await provider.request({
               method: "wallet_addEthereumChain",
               params: [
@@ -318,7 +341,7 @@ function App() {
                 },
               ],
             });
-          } else if (chainId === "0xaa36a7") {
+          } else if (chainId === "11155111") {
             await provider.request({
               method: "wallet_addEthereumChain",
               params: [
@@ -416,7 +439,7 @@ function App() {
         tariffId,
         ethers.utils.hexlify(ethers.utils.toUtf8Bytes(JSON.stringify(encryptedData)))
       );
-      await approveTx.wait();
+      await tx.wait();
 
       setStatus(t("status.success"));
     } catch (error) {

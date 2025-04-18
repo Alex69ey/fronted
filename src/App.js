@@ -14,8 +14,8 @@ const projectId = "ddba0f009aa0ad5d1d48ab7bc0a8dec8"; // Замени на де�
 const metadata = {
   name: "Alpha Market Maker AI",
   description: "A decentralized market maker application",
-  url: "https://your-dapp-url.com",
-  icons: ["https://your-dapp-url.com/icon.png"],
+  url: "https://alphamarketmakeraidapp.vercel.app/",
+  icons: ["https://alphamarketmakeraidapp.vercel.app/favicon.ico"],
 };
 
 const mainnet = {

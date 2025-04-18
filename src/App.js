@@ -1,15 +1,15 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { ethers } from "ethers";
-import { createWeb3Modal, defaultConfig } from "@web3modal/ethers5/react";
+import { createWeb3Modal, defaultConfig } from "@web3modal/ethers/react";
 import { encryptWithPublicKey } from "eth-crypto";
 import { useTranslation } from "react-i18next";
-import { Particles } from "@tsparticles/react"; // Импортируем новый компонент
-import { loadSlim } from "@tsparticles/slim"; // Импортируем loadSlim вместо loadFull
+import { Particles } from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
 import "./App.css";
 import "./i18n";
 
 // Конфигурация Web3Modal
-const projectId = "ddba0f009aa0ad5d1d48ab7bc0a8dec8";
+const projectId = "ddba0f009aa0ad5d1d48ab7bc0a8dec8"; // Замени на действительный WalletConnect Project ID
 
 const metadata = {
   name: "Alpha Market Maker AI",
@@ -44,17 +44,12 @@ const sepolia = {
 
 const chains = [mainnet, bsc, sepolia];
 
-const { open, close } = createWeb3Modal({
-  ethersConfig: defaultConfig({
-    metadata,
-    defaultChainId: 1,
-    enableEIP6963: true,
-    enableInjected: true,
-    enableCoinbase: true,
-    enableWalletConnect: true,
-  }),
+// Инициализация Web3Modal
+const modal = createWeb3Modal({
+  ethersConfig: defaultConfig({ metadata }),
   chains,
   projectId,
+  enableAnalytics: true,
 });
 
 const contractAddresses = {
@@ -64,9 +59,9 @@ const contractAddresses = {
 };
 
 const usdtAddresses = {
-  "1": "0xdAC17F958D2ee523a2206206994597C13D831ec",
-  "56": "0x55d398326f99059fF775485246999027B319795",
-  "11155111": "0x7169D38820dfd117C3FA1f22a697dBA58d90BA7",
+  "1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+  "56": "0x55d398326f99059fF775485246999027B3197955",
+  "11155111": "0x7169D38820dfd117C3FA1f22a697dBA58d90BA97",
 };
 
 const abi = [
@@ -206,7 +201,6 @@ function App() {
 
   for (let i = 0; i < candleData.length; i++) {
     if (!candleData[i]) {
-      // eslint-disable-next-line no-console
       console.error(`candleData[${i}] is undefined`);
       continue;
     }
@@ -234,9 +228,7 @@ function App() {
     let index = 0;
     const interval = setInterval(() => {
       if (index < candleData.length && candleData[index]) {
-        // eslint-disable-next-line no-console
         console.log("Adding candle:", candleData[index]);
-        // eslint-disable-next-line no-console
         console.log("Adding Bollinger Band:", bollingerBands[index]);
         setCandles((prev) => [...prev, candleData[index]]);
         setBollingerBandsDynamic((prev) => [...prev, bollingerBands[index]]);
@@ -269,54 +261,53 @@ function App() {
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+  useEffect(() => {
+    const unsubscribe = modal.subscribeProvider(({ address, chainId, isConnected }) => {
+      if (isConnected && address && window.ethereum) {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          provider.getSigner().then(signer => {
+            setProvider(provider);
+            setSigner(signer);
+            setWalletConnected(true);
+            setWalletAddress(address);
+            setSelectedNetwork(chainId.toString());
+            setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+          }).catch(error => {
+            console.error("Error getting signer:", error);
+            setStatus("Failed to get signer. Please try reconnecting.");
+          });
+        } catch (error) {
+          console.error("Error creating provider:", error);
+          setStatus("Failed to initialize provider.");
+        }
+      } else {
+        setWalletConnected(false);
+        setWalletAddress("");
+        setSelectedNetwork("");
+        setProvider(null);
+        setSigner(null);
+        setStatus("Wallet disconnected");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   const connectWallet = async () => {
     try {
+      console.log("Attempting to open Web3Modal...");
       setStatus("Attempting to connect wallet...");
-      const walletProvider = await open();
-      if (!walletProvider) {
-        setStatus("No provider found. Please try again.");
-        return null;
-      }
-
-      const ethersProvider = new ethers.providers.Web3Provider(walletProvider);
-      const signerInstance = ethersProvider.getSigner();
-      const address = await signerInstance.getAddress();
-      const chainId = (await ethersProvider.getNetwork()).chainId.toString();
-
-      setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
-      setProvider(ethersProvider);
-      setSigner(signerInstance);
-      setWalletConnected(true);
-      setWalletAddress(address);
-      setSelectedNetwork(chainId);
-
-      walletProvider.on("accountsChanged", async (accounts) => {
-        if (accounts.length === 0) {
-          disconnectWallet();
-        } else {
-          const newSigner = ethersProvider.getSigner();
-          setWalletAddress(accounts[0]);
-          setSigner(newSigner);
-          setStatus(`Connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`);
-        }
-      });
-
-      walletProvider.on("chainChanged", (chainId) => {
-        const newChainId = parseInt(chainId, 16).toString();
-        setSelectedNetwork(newChainId);
-        setStatus(`Switched to ${networks.find(net => net.chainId === newChainId)?.name || "Unknown Network"}`);
-      });
-
-      return signerInstance;
+      await modal.open();
+      console.log("Web3Modal opened");
     } catch (error) {
+      console.error("Error in connectWallet:", error);
       setStatus(`Connection error: ${error.message}`);
-      return null;
     }
   };
 
   const disconnectWallet = async () => {
     try {
-      await close();
+      await modal.close();
       setWalletConnected(false);
       setWalletAddress("");
       setSelectedNetwork("");
@@ -324,6 +315,7 @@ function App() {
       setSigner(null);
       setStatus("Wallet disconnected");
     } catch (error) {
+      console.error("Disconnect error:", error);
       setStatus(`Disconnect error: ${error.message}`);
     }
   };
@@ -426,8 +418,8 @@ function App() {
 
     setStatus(t("status.connecting"));
     if (!signer) {
-      const newSigner = await connectWallet();
-      if (!newSigner) return;
+      setStatus("No signer available. Please reconnect wallet.");
+      return;
     }
 
     const contractAddress = contractAddresses[selectedNetwork];
@@ -435,6 +427,9 @@ function App() {
 
     if (!contractAddress || !usdtAddress) {
       setStatus("Contract or USDT address not configured for this network!");
+      console.log("Selected network:", selectedNetwork);
+      console.log("Contract address:", contractAddress);
+      console.log("USDT address:", usdtAddress);
       return;
     }
 
@@ -443,10 +438,8 @@ function App() {
     try {
       setStatus(t("status.encrypting"));
       const clientData = JSON.stringify(formData);
-      const encryptedData = await encryptWithPublicKey(
-        "your-public-key",
-        clientData
-      );
+      const encryptedData = await encryptWithPublicKey("your-public-key", clientData);
+      console.log("Encrypted data:", encryptedData);
 
       setStatus(t("status.approving"));
       const usdtContract = new ethers.Contract(
@@ -454,24 +447,23 @@ function App() {
         ["function approve(address spender, uint256 amount) external"],
         signer
       );
-      const amount = tariffs[tariffId - 1].name
-        .split(" - ")[1]
-        .replace(" USDT", "");
+      const amount = tariffs[tariffId - 1].name.split(" - ")[1].replace(" USDT", "");
       const approveTx = await usdtContract.approve(
         contractAddress,
-        ethers.utils.parseUnits(amount, 6)
+        ethers.parseUnits(amount, 6)
       );
       await approveTx.wait();
 
       setStatus(t("status.processing"));
-      const tx = await contract.payForService(
-        tariffId,
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(JSON.stringify(encryptedData)))
-      );
+      const encodedData = ethers.toUtf8Bytes(JSON.stringify(encryptedData));
+      console.log("Encoded data length:", encodedData.length);
+      const hexData = ethers.hexlify(encodedData);
+      const tx = await contract.payForService(tariffId, hexData);
       await tx.wait();
 
       setStatus(t("status.success"));
     } catch (error) {
+      console.error("Error in handleSubmit:", error);
       setStatus(`Error: ${error.message}`);
     }
   };
@@ -482,7 +474,7 @@ function App() {
   };
 
   const particlesInit = async (engine) => {
-    await loadSlim(engine); // Используем loadSlim вместо loadFull
+    await loadSlim(engine);
   };
 
   return (
@@ -590,18 +582,18 @@ function App() {
             background: { color: { value: "transparent" } },
             fpsLimit: 60,
             particles: {
-              number: { value: 50, density: { enable: true, area: 800 } }, // Заменили value_area на area
+              number: { value: 50, density: { enable: true, area: 800 } },
               color: { value: "#00d4ff" },
               shape: { type: "circle" },
-              opacity: { value: { min: 0.1, max: 0.5 }, random: true }, // Обновили формат opacity
-              size: { value: { min: 1, max: 3 }, random: true }, // Обновили формат size
+              opacity: { value: { min: 0.1, max: 0.5 }, random: true },
+              size: { value: { min: 1, max: 3 }, random: true },
               move: {
                 enable: true,
-                speed: { min: 1, max: 2 }, // Обновили speed
+                speed: { min: 1, max: 2 },
                 direction: "none",
                 random: false,
                 straight: false,
-                outModes: { default: "out" }, // Заменили out_mode на outModes
+                outModes: { default: "out" },
               },
             },
             detectRetina: true,

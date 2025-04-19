@@ -23,7 +23,7 @@ const mainnet = {
   name: "Ethereum",
   currency: "ETH",
   explorerUrl: "https://etherscan.io",
-  rpcUrl: "https://mainnet.infura.io/v3/YOUR_INFURA_ID",
+  rpcUrl: "https://mainnet.infura.io/v3/4c9e3f999a68423bab7c091b3ef5440c",
 };
 
 const bsc = {
@@ -39,7 +39,7 @@ const sepolia = {
   name: "Sepolia Testnet",
   currency: "ETH",
   explorerUrl: "https://sepolia.etherscan.io",
-  rpcUrl: "https://sepolia.infura.io/v3/YOUR_INFURA_ID",
+  rpcUrl: "https://sepolia.infura.io/v3/4c9e3f999a68423bab7c091b3ef5440c",
 };
 
 const chains = [mainnet, bsc, sepolia];

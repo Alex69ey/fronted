@@ -55,7 +55,7 @@ const modal = createWeb3Modal({
 const contractAddresses = {
   "1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS",
   "56": "0xYOUR_BSC_CONTRACT_ADDRESS",
-  "11155111": "0xYOUR_SEPOLIA_CONTRACT_ADDRESS",
+  "11155111": "0x10de6b7186aE28c3E8a50038086C060332257A7B",
 };
 
 const usdtAddresses = {
@@ -66,7 +66,11 @@ const usdtAddresses = {
 
 const abi = [
   "function payForService(uint8 _tariffId, bytes memory _encryptedData) external",
+  "function withdrawUSDT(uint256 _amount) external",
+  "function getTariff(uint8 _tariffId) external view returns (uint256 price, uint8 tradingPairs, uint8 durationWeeks)",
+  "function getPaymentCount(address _client) external view returns (uint256)",
   "event PaymentReceived(address indexed client, uint256 amount, uint8 tariffId, bytes encryptedData)",
+  "event PaymentFailed(address indexed client, string reason)",
 ];
 
 function App() {
@@ -90,6 +94,7 @@ function App() {
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
+  const [paymentHistory, setPaymentHistory] = useState([]);
 
   const networks = [
     { chainId: "1", name: "Ethereum Mainnet" },
@@ -98,19 +103,19 @@ function App() {
   ];
 
   const tariffs = [
-    { id: 1, name: "2 Weeks, 1 Pair - 690 USDT" },
-    { id: 2, name: "1 Month, 1 Pair - 1300 USDT" },
-    { id: 3, name: "1 Month, 2 Pairs - 2000 USDT" },
-    { id: 4, name: "1 Month, 3 Pairs - 2500 USDT" },
-    { id: 5, name: "1 Month, 4 Pairs - 3000 USDT" },
-    { id: 6, name: "1 Month, 5 Pairs - 3500 USDT" },
-    { id: 7, name: "2 Months, 1 Pair - 2000 USDT" },
-    { id: 8, name: "2 Months, 2 Pairs - 3500 USDT" },
-    { id: 9, name: "2 Months, 3 Pairs - 4500 USDT" },
-    { id: 10, name: "2 Months, 4 Pairs - 5500 USDT" },
-    { id: 11, name: "2 Months, 5 Pairs - 6000 USDT" },
-    { id: 12, name: "Change of strategy - 9 USDT" },
-    { id: 13, name: "Project support - 999 USDT" },
+    { id: 1, name: "2 Weeks, 1 Pair - 552 USDT" },
+    { id: 2, name: "1 Month, 1 Pair - 1040 USDT" },
+    { id: 3, name: "1 Month, 2 Pairs - 1600 USDT" },
+    { id: 4, name: "1 Month, 3 Pairs - 2000 USDT" },
+    { id: 5, name: "1 Month, 4 Pairs - 2400 USDT" },
+    { id: 6, name: "1 Month, 5 Pairs - 2800 USDT" },
+    { id: 7, name: "2 Months, 1 Pair - 1600 USDT" },
+    { id: 8, name: "2 Months, 2 Pairs - 2800 USDT" },
+    { id: 9, name: "2 Months, 3 Pairs - 3600 USDT" },
+    { id: 10, name: "2 Months, 4 Pairs - 4400 USDT" },
+    { id: 11, name: "2 Months, 5 Pairs - 4800 USDT" },
+    { id: 12, name: "Change of strategy - 7 USDT" },
+    { id: 13, name: "Project support - 799 USDT" },
   ];
 
   const candleData = [
@@ -261,6 +266,30 @@ function App() {
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+  const fetchPaymentHistory = async () => {
+    if (!walletConnected || !signer || !selectedNetwork) return;
+
+    const contractAddress = contractAddresses[selectedNetwork];
+    if (!contractAddress) return;
+
+    const contract = new ethers.Contract(contractAddress, abi, signer);
+
+    try {
+      const filter = contract.filters.PaymentReceived(walletAddress);
+      const events = await contract.queryFilter(filter, 0, "latest");
+      const historyFormatted = events.map((event) => ({
+        amount: ethers.formatUnits(event.args.amount, 6),
+        tariffId: event.args.tariffId,
+        timestamp: new Date(Number(event.args.timestamp) * 1000).toLocaleString(),
+      }));
+
+      setPaymentHistory(historyFormatted);
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+      setStatus(`Error fetching payment history: ${error.message}`);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = modal.subscribeProvider(({ address, chainId, isConnected }) => {
       if (isConnected && address && window.ethereum) {
@@ -273,6 +302,7 @@ function App() {
             setWalletAddress(address);
             setSelectedNetwork(chainId.toString());
             setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+            fetchPaymentHistory();
           }).catch(error => {
             console.error("Error getting signer:", error);
             setStatus("Failed to get signer. Please try reconnecting.");
@@ -287,6 +317,7 @@ function App() {
         setSelectedNetwork("");
         setProvider(null);
         setSigner(null);
+        setPaymentHistory([]);
         setStatus("Wallet disconnected");
       }
     });
@@ -313,6 +344,7 @@ function App() {
       setSelectedNetwork("");
       setProvider(null);
       setSigner(null);
+      setPaymentHistory([]);
       setStatus("Wallet disconnected");
     } catch (error) {
       console.error("Disconnect error:", error);
@@ -444,24 +476,37 @@ function App() {
       setStatus(t("status.approving"));
       const usdtContract = new ethers.Contract(
         usdtAddress,
-        ["function approve(address spender, uint256 amount) external"],
+        [
+          "function approve(address spender, uint256 amount) external",
+          "function decimals() external view returns (uint8)",
+        ],
         signer
       );
+      const decimals = await usdtContract.decimals();
       const amount = tariffs[tariffId - 1].name.split(" - ")[1].replace(" USDT", "");
       const approveTx = await usdtContract.approve(
         contractAddress,
-        ethers.parseUnits(amount, 6)
+        ethers.parseUnits(amount, decimals)
       );
       await approveTx.wait();
 
       setStatus(t("status.processing"));
-      const encodedData = ethers.toUtf8Bytes(JSON.stringify(encryptedData));
+      const encodedData = ethers.hexlify(
+        ethers.toUtf8Bytes(
+          JSON.stringify({
+            iv: encryptedData.iv,
+            ephemPublicKey: encryptedData.ephemPublicKey,
+            ciphertext: encryptedData.ciphertext,
+            mac: encryptedData.mac,
+          })
+        )
+      );
       console.log("Encoded data length:", encodedData.length);
-      const hexData = ethers.hexlify(encodedData);
-      const tx = await contract.payForService(tariffId, hexData);
+      const tx = await contract.payForService(tariffId, encodedData);
       await tx.wait();
 
       setStatus(t("status.success"));
+      fetchPaymentHistory();
     } catch (error) {
       console.error("Error in handleSubmit:", error);
       setStatus(`Error: ${error.message}`);
@@ -759,6 +804,19 @@ function App() {
             <button onClick={handleSubmit}>{t("payButton")}</button>
             <div className="status">{status}</div>
           </div>
+
+          {walletConnected && paymentHistory.length > 0 && (
+            <div className="payment-history">
+              <h2>{t("paymentHistory")}</h2>
+              <ul>
+                {paymentHistory.map((payment, idx) => (
+                  <li key={idx}>
+                    {t("tariff")}: {tariffs[payment.tariffId - 1].name}, {t("amount")}: {payment.amount} USDT, {t("date")}: {payment.timestamp}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </Suspense>
 
         <footer>{t("footer")}</footer>

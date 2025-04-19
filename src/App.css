@@ -732,3 +732,56 @@ footer {
   background: radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
   animation: pulse-bg 4s infinite;
 }
+
+/* Стили для истории платежей */
+.payment-history {
+  background: rgba(31, 31, 31, 0.9);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+  width: 100%;
+  max-width: 550px;
+  backdrop-filter: blur(5px);
+  margin-bottom: 20px;
+}
+
+.payment-history h2 {
+  color: #00d4ff;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.6em;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.payment-history ul {
+  list-style: none;
+  padding: 0;
+}
+
+.payment-history li {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+  color: #e0e0e0;
+  font-size: 0.9em;
+  word-break: break-word;
+}
+
+.payment-history li:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 576px) {
+  .payment-history {
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .payment-history h2 {
+    font-size: 1.3em;
+    margin-bottom: 15px;
+  }
+
+  .payment-history li {
+    font-size: 0.8em;
+  }
+}

@@ -9,7 +9,7 @@ import "./App.css";
 import "./i18n";
 
 // Конфигурация Web3Modal
-const projectId = "ddba0f009aa0ad5d1d48ab7bc0a8dec8"; // Замени на действительный WalletConnect Project ID
+const projectId = "ddba0f009aa0ad5d1d48ab7bc0a8dec8";
 
 const metadata = {
   name: "Alpha Market Maker AI",
@@ -44,7 +44,6 @@ const sepolia = {
 
 const chains = [mainnet, bsc, sepolia];
 
-// Инициализация Web3Modal
 const modal = createWeb3Modal({
   ethersConfig: defaultConfig({ metadata }),
   chains,
@@ -55,13 +54,13 @@ const modal = createWeb3Modal({
 const contractAddresses = {
   "1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS",
   "56": "0xYOUR_BSC_CONTRACT_ADDRESS",
-  "11155111": "0x10de6b7186aE28c3E8a50038086C060332257A7B",
+  "11155111": "0x973d57e218dDb5dCf9A5Fcc0a654243cdb94d3E6", // Обнови после развёртывания
 };
 
 const usdtAddresses = {
   "1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
   "56": "0x55d398326f99059fF775485246999027B3197955",
-  "11155111": "0x5F81b7533c51f255Eae87eA671e143279f5276de",
+  "11155111": "0xa2E2C327c886C78C935A6A079E9EDaB7472b8c53", // Обнови после развёртывания
 };
 
 const abi = [
@@ -69,6 +68,7 @@ const abi = [
   "function withdrawUSDT(uint256 _amount) external",
   "function getTariff(uint8 _tariffId) external view returns (uint256 price, uint8 tradingPairs, uint8 durationWeeks)",
   "function getPaymentCount(address _client) external view returns (uint256)",
+  "function ownerPublicKey() external view returns (bytes)",
   "event PaymentReceived(address indexed client, uint256 amount, uint8 tariffId, bytes encryptedData)",
   "event PaymentFailed(address indexed client, string reason)",
 ];
@@ -470,14 +470,20 @@ function App() {
     try {
       setStatus(t("status.encrypting"));
       const clientData = JSON.stringify(formData);
-      const encryptedData = await encryptWithPublicKey("your-public-key", clientData);
+
+      // Получаем публичный ключ из контракта
+      const ownerPublicKeyHex = await contract.ownerPublicKey();
+      const ownerPublicKey = ethers.getBytes(ownerPublicKeyHex);
+
+      // Шифруем данные
+      const encryptedData = await encryptWithPublicKey(ownerPublicKey, clientData);
       console.log("Encrypted data:", encryptedData);
 
       setStatus(t("status.approving"));
       const usdtContract = new ethers.Contract(
         usdtAddress,
         [
-          "function approve(address spender, uint256 amount) external",
+          "function approve(address spender, uint256 amount) external returns (bool)",
           "function decimals() external view returns (uint8)",
         ],
         signer

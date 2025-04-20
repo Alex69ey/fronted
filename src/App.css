@@ -201,7 +201,7 @@ body {
   text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
-select, input {
+select, input[type="text"], input[type="number"] {
   width: 100%;
   padding: 12px;
   margin: 10px 0;
@@ -555,185 +555,49 @@ footer {
   }
 }
 
-@media (max-width: 576px) {
-  body {
-    font-size: 14px; /* Уменьшаем базовый размер шрифта */
-  }
-
-  .app-container {
-    padding: 10px;
-  }
-
-  .header {
-    padding: 15px;
-    max-width: 100%; /* Убираем фиксированную ширину */
-    margin-bottom: 15px;
-  }
-
-  .header-content h1 {
-    font-size: 1.5em; /* Уменьшаем заголовок */
-    line-height: 1.2;
-  }
-
-  .header-content p {
-    font-size: 0.9em; /* Уменьшаем подзаголовок */
-    line-height: 1.2;
-  }
-
-  .wallet-controls {
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .language-buttons {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 0;
-  }
-
-  .language-buttons button {
-    width: 32px;
-    height: 32px;
-    font-size: 0.8em;
-    padding: 6px;
-  }
-
-  .wallet-actions {
-    flex-direction: row;
-    gap: 8px;
-  }
-
-  .wallet-button {
-    padding: 8px 16px;
-    font-size: 0.9em;
-  }
-
-  .wallet-address {
-    font-size: 0.8em;
-    max-width: 150px; /* Ограничиваем ширину адреса */
-    text-align: center;
-  }
-
-  .wallet-controls select {
-    width: 100%;
-    max-width: 200px;
-    padding: 8px;
-    font-size: 0.9em;
-  }
-
-  .form-container {
-    padding: 15px;
-    max-width: 100%; /* Убираем фиксированную ширину */
-  }
-
-  .form-container h2 {
-    font-size: 1.3em;
-    margin-bottom: 15px;
-  }
-
-  select, input {
-    padding: 10px;
-    font-size: 0.9em;
-    margin: 8px 0;
-  }
-
-  select {
-    padding-right: 30px;
-    background-position: right 10px center;
-  }
-
-  button {
-    padding: 12px;
-    font-size: 1em;
-  }
-
-  .status {
-    font-size: 0.8em;
-    margin-top: 10px;
-  }
-
-  footer {
-    font-size: 0.7em;
-    padding: 8px;
-  }
-
-  .splash-screen {
-    padding: 10px;
-  }
-
-  .ai-graphic {
-    width: 100%;
-    max-width: 300px; /* Уменьшаем график */
-    height: auto;
-    aspect-ratio: 2 / 1; /* Сохраняем пропорции */
-  }
-
-  .status-text {
-    font-size: 14px;
-    padding: 0 10px;
-  }
-
-  .ai-activation-text {
-    font-size: 12px;
-  }
-
-  .sparkle {
-    r: 3; /* Уменьшаем искры */
-  }
-}
-
-@media (min-width: 577px) and (max-width: 768px) {
-  .header-content h1 {
-    font-size: 2em;
-  }
-
-  .form-container {
-    padding: 20px;
-  }
-
-  select, input, button {
-    font-size: 1em;
-  }
-
-  .ai-graphic {
-    width: 500px;
-    height: 250px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 992px) {
-  .header-content h1 {
-    font-size: 2.2em;
-  }
-}
-
-@media (min-width: 993px) {
-  .app-container {
-    padding: 25px;
-  }
-
-  .header-content h1 {
-    font-size: 2.8em;
-  }
-
-  .form-container {
-    padding: 40px;
-  }
-}
-
-.splash-screen::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Стили для клиентского меню */
+.client-dashboard {
+  background: rgba(31, 31, 31, 0.9);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
   width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
-  animation: pulse-bg 4s infinite;
+  max-width: 550px;
+  backdrop-filter: blur(5px);
+  margin-bottom: 20px;
 }
 
-/* Стили для истории платежей */
+.client-dashboard h2 {
+  color: #00d4ff;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.6em;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.active-tariff {
+  background: rgba(0, 212, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.active-tariff p {
+  color: #e0e0e0;
+  font-size: 0.9em;
+  margin: 5px 0;
+}
+
+.active-tariff .status-active {
+  color: #4dff4d;
+  font-weight: bold;
+}
+
+.active-tariff .status-expired {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
 .payment-history {
   background: rgba(31, 31, 31, 0.9);
   padding: 25px;
@@ -770,18 +634,716 @@ footer {
   border-bottom: none;
 }
 
+/* Стили для модального окна с тарифами */
+.tariff-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.tariff-modal-content {
+  background: rgba(31, 31, 31, 0.95);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  backdrop-filter: blur(5px);
+  animation: modalFadeIn 0.3s ease-in-out;
+}
+
+.tariff-modal-content h2 {
+  color: #00d4ff;
+  font-size: 1.6em;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.tariff-modal-content p {
+  color: #e0e0e0;
+  font-size: 1em;
+  margin: 10px 0;
+  line-height: 1.4;
+}
+
+.tariff-modal-content .status-active {
+  color: #4dff4d;
+  font-weight: bold;
+}
+
+.tariff-modal-content .status-expired {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+.tariff-modal-content button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #00d4ff;
+  border: none;
+  border-radius: 8px;
+  color: #0a0a0a;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tariff-modal-content button:hover {
+  background: #00b0d4;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+  transform: translateY(-2px);
+}
+
+/* Анимация после оплаты */
+.payment-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, #0a0a2a 0%, #000000 70%);
+  z-index: 1000;
+  overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Цифровая матрица на фоне */
+.digital-matrix {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.matrix-stream {
+  position: absolute;
+  width: 2px;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, #00d4ff, transparent);
+  opacity: 0;
+  animation: matrixFall 3s linear infinite;
+}
+
+/* Неоновая сетка на фоне */
+.neon-grid {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+      to right,
+      rgba(0, 212, 255, 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0;
+  animation: gridFadeIn 2s ease-in-out forwards;
+}
+
+/* Центральный AI-кристалл и market making элементы */
+.market-making-core {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  animation: coreEntrance 3s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+.core-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Кристалл */
+.crystal-core {
+  animation: crystalPulse 3s ease-in-out infinite, crystalRotate 15s linear infinite;
+}
+
+/* Вращающиеся кольца */
+.orbital-rings circle:nth-child(1) {
+  animation: ringRotate 10s linear infinite;
+}
+
+.orbital-rings circle:nth-child(2) {
+  animation: ringRotate 15s linear infinite reverse;
+}
+
+/* Спред */
+.spread-ring {
+  animation: spreadPulse 4s ease-in-out infinite;
+}
+
+/* Потоки ордеров */
+.order-stream {
+  opacity: 0;
+  animation: orderFlow 2s ease-in-out infinite;
+}
+
+.order-stream.buy {
+  filter: drop-shadow(0 0 5px rgba(77, 255, 77, 0.7));
+}
+
+.order-stream.sell {
+  filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.7));
+}
+
+.order-particle {
+  opacity: 0;
+  animation: particleFlow 2s ease-in-out infinite;
+}
+
+.order-particle.buy {
+  filter: drop-shadow(0 0 5px rgba(77, 255, 77, 0.7));
+}
+
+.order-particle.sell {
+  filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.7));
+}
+
+/* Сделки */
+.trade-pulse {
+  opacity: 0;
+  animation: tradePulse 3s ease-in-out forwards;
+}
+
+.mini-chart {
+  opacity: 0;
+  animation: miniChartFade 1s ease-in forwards 1s;
+}
+
+/* Звуковые волны */
+.sound-waves circle:nth-child(1) {
+  animation: soundWave 3s ease-in-out infinite;
+}
+
+.sound-waves circle:nth-child(2) {
+  animation: soundWave 3s ease-in-out infinite 0.5s;
+}
+
+/* Текст с эффектом сканирования */
+.activation-text {
+  position: relative;
+  top: 0;
+  color: #00d4ff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 0 0 20px #00d4ff;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: textEntrance 2s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards 1s, scanText 2s ease-in-out infinite 1s;
+}
+
+.sub-text {
+  position: relative;
+  top: 20px;
+  color: #ffd700;
+  font-size: 1.8rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px #ffd700;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: subTextEntrance 1.5s ease-in-out forwards 3s, scanText 2s ease-in-out infinite 3s;
+}
+
+/* Финальный взрыв частиц */
+.final-burst {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  animation: burst 1s ease-in forwards 6s;
+}
+
+.burst-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #ffffff;
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(2px);
+  animation: burstParticle 1.5s ease-out forwards;
+}
+
+/* Стили для выбора стратегий */
+.strategy-multi-select {
+  position: relative;
+  margin: 10px 0;
+}
+
+.strategy-select-display {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  background: rgba(42, 42, 42, 0.8);
+  color: #e0e0e0;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-sizing: border-box;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%2300d4ff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.strategy-select-display:hover {
+  border-color: #00b0d4;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.strategy-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(42, 42, 42, 0.95);
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 212, 255, 0.3);
+  z-index: 10;
+  margin-top: 5px;
+}
+
+.strategy-option {
+  padding: 10px 15px;
+  color: #e0e0e0;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.strategy-option:hover {
+  background: rgba(0, 212, 255, 0.2);
+}
+
+.strategy-option.selected {
+  background: rgba(0, 212, 255, 0.4);
+  color: #00d4ff;
+}
+
+.strategy-description {
+  margin-top: 5px;
+  color: #b0b0b0;
+  font-size: 0.8em;
+  line-height: 1.4;
+}
+
+/* Анимации */
+@keyframes matrixFall {
+  0% { opacity: 0; transform: translateY(-100%); }
+  50% { opacity: 0.8; transform: translateY(50%); }
+  100% { opacity: 0; transform: translateY(100%); }
+}
+
+@keyframes gridFadeIn {
+  0% { opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0.2; }
+}
+
+@keyframes coreEntrance {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 0.7; transform: scale(1.1) rotate(10deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes crystalPulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5)); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.8)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5)); }
+}
+
+@keyframes crystalRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ringRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spreadPulse {
+  0% { r: 90; opacity: 0.5; }
+  50% { r: 95; opacity: 0.8; }
+  100% { r: 90; opacity: 0.5; }
+}
+
+@keyframes orderFlow {
+  0% { opacity: 0; transform: scale(0); }
+  50% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+@keyframes particleFlow {
+  0% { opacity: 0; transform: translate(0, 0); }
+  50% { opacity: 0.8; transform: translate(50px, 50px); }
+  100% { opacity: 0; transform: translate(100px, 100px); }
+}
+
+@keyframes tradePulse {
+  0% { opacity: 0; transform: scale(0); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes miniChartFade {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes soundWave {
+  0% { r: 60; opacity: 0.3; }
+  50% { r: 80; opacity: 0.1; }
+  100% { r: 60; opacity: 0.3; }
+}
+
+@keyframes textEntrance {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scanText {
+  0% { text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff; }
+  50% { text-shadow: 0 0 30px #00d4ff, 0 0 60px #00d4ff; }
+  100% { text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff; }
+}
+
+@keyframes subTextEntrance {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes burst {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes burstParticle {
+  0% { opacity: 0; transform: scale(0); }
+  50% { opacity: 0.8; transform: scale(1) translateY(-50px); }
+  100% { opacity: 0; transform: scale(0) translateY(-100px); }
+}
+
+@keyframes modalFadeIn {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 @media (max-width: 576px) {
+  body {
+    font-size: 14px;
+  }
+
+  .app-container {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 15px;
+    max-width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .header-content h1 {
+    font-size: 1.5em;
+    line-height: 1.2;
+  }
+
+  .header-content p {
+    font-size: 0.9em;
+    line-height: 1.2;
+  }
+
+  .wallet-controls {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .language-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+
+  .language-buttons button {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8em;
+    padding: 6px;
+  }
+
+  .wallet-actions {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .wallet-button {
+    padding: 8px 16px;
+    font-size: 0.9em;
+  }
+
+  .wallet-address {
+    font-size: 0.8em;
+  }
+
+  .form-container {
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .form-container h2 {
+    font-size: 1.4em;
+  }
+
+  select, input[type="text"], input[type="number"] {
+    padding: 10px;
+    font-size: 0.9em;
+  }
+
+  select {
+    padding-right: 30px;
+    background-position: right 10px center;
+  }
+
+  button {
+    padding: 12px;
+    font-size: 1em;
+  }
+
+  .status {
+    font-size: 0.8em;
+  }
+
+  .ai-graphic {
+    width: 100%;
+    height: auto;
+    max-width: 330px;
+    max-height: 165px;
+  }
+
+  .status-text {
+    font-size: 14px;
+  }
+
+  .client-dashboard {
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .client-dashboard h2 {
+    font-size: 1.4em;
+  }
+
+  .active-tariff p {
+    font-size: 0.8em;
+  }
+
   .payment-history {
     padding: 15px;
     max-width: 100%;
   }
 
   .payment-history h2 {
-    font-size: 1.3em;
-    margin-bottom: 15px;
+    font-size: 1.4em;
   }
 
   .payment-history li {
+    font-size: 0.8em;
+  }
+
+  .strategy-select-display {
+    padding: 10px;
+    font-size: 0.9em;
+    padding-right: 30px;
+    background-position: right 10px center;
+  }
+
+  .strategy-options {
+    max-height: 180px;
+  }
+
+  .strategy-option {
+    padding: 8px 12px;
+    font-size: 0.8em;
+  }
+
+  .strategy-description {
+    font-size: 0.7em;
+  }
+
+  .activation-text {
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+  }
+
+  .sub-text {
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+  }
+
+  .market-making-core {
+    width: 300px;
+    height: 300px;
+  }
+
+  .tariff-modal-content {
+    max-width: 300px;
+    padding: 20px;
+  }
+
+  .tariff-modal-content h2 {
+    font-size: 1.4em;
+    margin-bottom: 15px;
+  }
+
+  .tariff-modal-content p {
+    font-size: 0.9em;
+    margin: 8px 0;
+  }
+
+  .tariff-modal-content button {
+    padding: 8px 16px;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 375px) {
+  body {
+    font-size: 12px;
+  }
+
+  .header-content h1 {
+    font-size: 1.2em;
+  }
+
+  .header-content p {
+    font-size: 0.8em;
+  }
+
+  .language-buttons button {
+    width: 28px;
+    height: 28px;
+    font-size: 0.7em;
+    padding: 4px;
+  }
+
+  .wallet-button {
+    padding: 6px 12px;
+    font-size: 0.8em;
+  }
+
+  .wallet-address {
+    font-size: 0.7em;
+  }
+
+  .form-container h2 {
+    font-size: 1.2em;
+  }
+
+  select, input[type="text"], input[type="number"] {
+    padding: 8px;
+    font-size: 0.8em;
+  }
+
+  button {
+    padding: 10px;
+    font-size: 0.9em;
+  }
+
+  .status {
+    font-size: 0.7em;
+  }
+
+  .ai-graphic {
+    max-width: 280px;
+    max-height: 140px;
+  }
+
+  .status-text {
+    font-size: 12px;
+  }
+
+  .client-dashboard h2 {
+    font-size: 1.2em;
+  }
+
+  .payment-history h2 {
+    font-size: 1.2em;
+  }
+
+  .strategy-select-display {
+    padding: 8px;
+    font-size: 0.8em;
+    padding-right: 28px;
+    background-position: right 8px center;
+  }
+
+  .strategy-options {
+    max-height: 150px;
+  }
+
+  .strategy-option {
+    padding: 6px 10px;
+    font-size: 0.7em;
+  }
+
+  .strategy-description {
+    font-size: 0.65em;
+  }
+
+  .activation-text {
+    font-size: 1.5rem;
+  }
+
+  .sub-text {
+    font-size: 1rem;
+  }
+
+  .market-making-core {
+    width: 250px;
+    height: 250px;
+  }
+
+  .tariff-modal-content {
+    max-width: 250px;
+    padding: 15px;
+  }
+
+  .tariff-modal-content h2 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+
+  .tariff-modal-content p {
+    font-size: 0.8em;
+    margin: 6px 0;
+  }
+
+  .tariff-modal-content button {
+    padding: 6px 12px;
     font-size: 0.8em;
   }
 }

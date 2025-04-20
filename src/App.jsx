@@ -5,6 +5,7 @@ import { encryptWithPublicKey } from "eth-crypto";
 import { useTranslation } from "react-i18next";
 import { Particles } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
+import PaymentAnimation from "./PaymentAnimation";
 import "./App.css";
 import "./i18n";
 
@@ -54,13 +55,13 @@ const modal = createWeb3Modal({
 const contractAddresses = {
   "1": "0xYOUR_ETHEREUM_CONTRACT_ADDRESS",
   "56": "0xYOUR_BSC_CONTRACT_ADDRESS",
-  "11155111": "0x973d57e218dDb5dCf9A5Fcc0a654243cdb94d3E6", // Обнови после развёртывания
+  "11155111": "0x973d57e218dDb5dCf9A5Fcc0a654243cdb94d3E6",
 };
 
 const usdtAddresses = {
   "1": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
   "56": "0x55d398326f99059fF775485246999027B3197955",
-  "11155111": "0xa2E2C327c886C78C935A6A079E9EDaB7472b8c53", // Обнови после развёртывания
+  "11155111": "0xa2E2C327c886C78C935A6A079E9EDaB7472b8c53",
 };
 
 const abi = [
@@ -69,6 +70,7 @@ const abi = [
   "function getTariff(uint8 _tariffId) external view returns (uint256 price, uint8 tradingPairs, uint8 durationWeeks)",
   "function getPaymentCount(address _client) external view returns (uint256)",
   "function ownerPublicKey() external view returns (bytes)",
+  "function clientRecords(address, uint256) external view returns (bytes encryptedData, uint256 timestamp, uint8 tariffId)",
   "event PaymentReceived(address indexed client, uint256 amount, uint8 tariffId, bytes encryptedData)",
   "event PaymentFailed(address indexed client, string reason)",
 ];
@@ -82,7 +84,7 @@ function App() {
     volume: "",
     priceMovement: "",
     dex: "",
-    strategy: "",
+    strategy: [],
   });
   const [tariffId, setTariffId] = useState(1);
   const [status, setStatus] = useState("Connecting to NeuralNet...");
@@ -95,6 +97,10 @@ function App() {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [activeTariff, setActiveTariff] = useState(null);
+  const [showPaymentAnimation, setShowPaymentAnimation] = useState(false);
+  const [isStrategyOpen, setIsStrategyOpen] = useState(false);
+  const [showTariffModal, setShowTariffModal] = useState(false);
 
   const networks = [
     { chainId: "1", name: "Ethereum Mainnet" },
@@ -116,6 +122,19 @@ function App() {
     { id: 11, name: "2 Months, 5 Pairs - 4800 USDT" },
     { id: 12, name: "Change of strategy - 7 USDT" },
     { id: 13, name: "Project support - 799 USDT" },
+  ];
+
+  const strategies = [
+    { key: "inventoryManagement", name: "Inventory Management", descriptionKey: "inventoryManagementDesc" },
+    { key: "spreadOptimization", name: "Spread Optimization", descriptionKey: "spreadOptimizationDesc" },
+    { key: "volatilityBasedQuoting", name: "Volatility-Based Quoting", descriptionKey: "volatilityBasedQuotingDesc" },
+    { key: "orderBookBalancing", name: "Order Book Balancing", descriptionKey: "orderBookBalancingDesc" },
+    { key: "dynamicSpreadAdjustment", name: "Dynamic Spread Adjustment", descriptionKey: "dynamicSpreadAdjustmentDesc" },
+    { key: "liquidityProvision", name: "Liquidity Provision", descriptionKey: "liquidityProvisionDesc" },
+    { key: "pricePegging", name: "Price Pegging", descriptionKey: "pricePeggingDesc" },
+    { key: "highFrequencyMarketMaking", name: "High-Frequency Market Making", descriptionKey: "highFrequencyMarketMakingDesc" },
+    { key: "adaptiveMarketMaking", name: "Adaptive Market Making", descriptionKey: "adaptiveMarketMakingDesc" },
+    { key: "frontRunning", name: "Front-Running", descriptionKey: "frontRunningDesc" },
   ];
 
   const candleData = [
@@ -206,7 +225,7 @@ function App() {
 
   for (let i = 0; i < candleData.length; i++) {
     if (!candleData[i]) {
-      console.error(`candleData[${i}] is undefined`);
+      setStatus(`Error: candleData[${i}] is undefined`);
       continue;
     }
     let sma;
@@ -233,8 +252,6 @@ function App() {
     let index = 0;
     const interval = setInterval(() => {
       if (index < candleData.length && candleData[index]) {
-        console.log("Adding candle:", candleData[index]);
-        console.log("Adding Bollinger Band:", bollingerBands[index]);
         setCandles((prev) => [...prev, candleData[index]]);
         setBollingerBandsDynamic((prev) => [...prev, bollingerBands[index]]);
         index++;
@@ -267,25 +284,68 @@ function App() {
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
   const fetchPaymentHistory = async () => {
-    if (!walletConnected || !signer || !selectedNetwork) return;
+    if (!walletConnected || !signer || !selectedNetwork) {
+      setStatus("Cannot fetch payment history: wallet not connected or network not selected.");
+      return;
+    }
 
     const contractAddress = contractAddresses[selectedNetwork];
-    if (!contractAddress) return;
+    if (!contractAddress) {
+      setStatus("Contract address not configured for this network!");
+      return;
+    }
 
     const contract = new ethers.Contract(contractAddress, abi, signer);
 
     try {
-      const filter = contract.filters.PaymentReceived(walletAddress);
-      const events = await contract.queryFilter(filter, 0, "latest");
-      const historyFormatted = events.map((event) => ({
-        amount: ethers.formatUnits(event.args.amount, 6),
-        tariffId: event.args.tariffId,
-        timestamp: new Date(Number(event.args.timestamp) * 1000).toLocaleString(),
-      }));
+      const paymentCount = await contract.getPaymentCount(walletAddress);
+      const payments = [];
 
-      setPaymentHistory(historyFormatted);
+      for (let i = 0; i < Number(paymentCount); i++) {
+        const record = await contract.clientRecords(walletAddress, i);
+        const tariffId = Number(record.tariffId);
+        const timestamp = Number(record.timestamp) * 1000;
+        const tariffDetails = await contract.getTariff(tariffId);
+        const amount = ethers.formatUnits(tariffDetails.price, 6);
+
+        const payment = {
+          tariffId: tariffId,
+          amount: amount,
+          timestamp: new Date(timestamp).toLocaleString(),
+          durationWeeks: Number(tariffDetails.durationWeeks),
+          timestampRaw: timestamp,
+        };
+
+        payments.push(payment);
+      }
+
+      setPaymentHistory(payments);
+
+      const now = Date.now();
+
+      const active = payments
+        .sort((a, b) => b.timestampRaw - a.timestampRaw)
+        .find(payment => {
+          const durationMs = payment.durationWeeks * 7 * 24 * 60 * 60 * 1000;
+          const endTime = payment.timestampRaw + durationMs;
+          const isActive = endTime > now && payment.tariffId !== 12 && payment.tariffId !== 13;
+          return isActive;
+        });
+
+      if (active) {
+        const durationMs = active.durationWeeks * 7 * 24 * 60 * 60 * 1000;
+        const endTime = active.timestampRaw + durationMs;
+        setActiveTariff({
+          tariffName: tariffs[active.tariffId - 1].name,
+          endDate: new Date(endTime).toLocaleString(),
+          status: "Active",
+        });
+        setShowTariffModal(true);
+      } else {
+        setActiveTariff(null);
+        setShowTariffModal(false);
+      }
     } catch (error) {
-      console.error("Error fetching payment history:", error);
       setStatus(`Error fetching payment history: ${error.message}`);
     }
   };
@@ -304,11 +364,9 @@ function App() {
             setStatus(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
             fetchPaymentHistory();
           }).catch(error => {
-            console.error("Error getting signer:", error);
             setStatus("Failed to get signer. Please try reconnecting.");
           });
         } catch (error) {
-          console.error("Error creating provider:", error);
           setStatus("Failed to initialize provider.");
         }
       } else {
@@ -318,6 +376,8 @@ function App() {
         setProvider(null);
         setSigner(null);
         setPaymentHistory([]);
+        setActiveTariff(null);
+        setShowTariffModal(false);
         setStatus("Wallet disconnected");
       }
     });
@@ -326,12 +386,9 @@ function App() {
 
   const connectWallet = async () => {
     try {
-      console.log("Attempting to open Web3Modal...");
       setStatus("Attempting to connect wallet...");
       await modal.open();
-      console.log("Web3Modal opened");
     } catch (error) {
-      console.error("Error in connectWallet:", error);
       setStatus(`Connection error: ${error.message}`);
     }
   };
@@ -345,9 +402,10 @@ function App() {
       setProvider(null);
       setSigner(null);
       setPaymentHistory([]);
+      setActiveTariff(null);
+      setShowTariffModal(false);
       setStatus("Wallet disconnected");
     } catch (error) {
-      console.error("Disconnect error:", error);
       setStatus(`Disconnect error: ${error.message}`);
     }
   };
@@ -428,7 +486,7 @@ function App() {
       formData.apiKey &&
       formData.volume &&
       formData.priceMovement &&
-      formData.strategy
+      formData.strategy.length > 0
     );
   };
 
@@ -459,9 +517,6 @@ function App() {
 
     if (!contractAddress || !usdtAddress) {
       setStatus("Contract or USDT address not configured for this network!");
-      console.log("Selected network:", selectedNetwork);
-      console.log("Contract address:", contractAddress);
-      console.log("USDT address:", usdtAddress);
       return;
     }
 
@@ -471,13 +526,10 @@ function App() {
       setStatus(t("status.encrypting"));
       const clientData = JSON.stringify(formData);
 
-      // Получаем публичный ключ из контракта
       const ownerPublicKeyHex = await contract.ownerPublicKey();
       const ownerPublicKey = ethers.getBytes(ownerPublicKeyHex);
 
-      // Шифруем данные
       const encryptedData = await encryptWithPublicKey(ownerPublicKey, clientData);
-      console.log("Encrypted data:", encryptedData);
 
       setStatus(t("status.approving"));
       const usdtContract = new ethers.Contract(
@@ -507,21 +559,62 @@ function App() {
           })
         )
       );
-      console.log("Encoded data length:", encodedData.length);
       const tx = await contract.payForService(tariffId, encodedData);
       await tx.wait();
 
-      setStatus(t("status.success"));
-      fetchPaymentHistory();
+      setShowPaymentAnimation(true);
     } catch (error) {
-      console.error("Error in handleSubmit:", error);
       setStatus(`Error: ${error.message}`);
     }
   };
 
+  const handleAnimationComplete = () => {
+    setShowPaymentAnimation(false);
+    setStatus(t("status.success"));
+    setFormData({
+      projectName: "",
+      exchange: "",
+      apiKey: "",
+      volume: "",
+      priceMovement: "",
+      dex: "",
+      strategy: [],
+    });
+    fetchPaymentHistory();
+  };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, checked } = e.target;
+
+    if (name === "strategy") {
+      setFormData((prev) => {
+        const currentStrategies = prev.strategy || [];
+        if (checked) {
+          return { ...prev, strategy: [...currentStrategies, value] };
+        } else {
+          return {
+            ...prev,
+            strategy: currentStrategies.filter((strat) => strat !== value),
+          };
+        }
+      });
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const toggleStrategy = (strategyName) => {
+    setFormData((prev) => {
+      const currentStrategies = prev.strategy || [];
+      if (currentStrategies.includes(strategyName)) {
+        return {
+          ...prev,
+          strategy: currentStrategies.filter((strat) => strat !== strategyName),
+        };
+      } else {
+        return { ...prev, strategy: [...currentStrategies, strategyName] };
+      }
+    });
   };
 
   const particlesInit = async (engine) => {
@@ -622,6 +715,22 @@ function App() {
             </svg>
           </div>
           <div className="status-text">{status}</div>
+        </div>
+      )}
+
+      {showPaymentAnimation && (
+        <PaymentAnimation onComplete={handleAnimationComplete} />
+      )}
+
+      {showTariffModal && activeTariff && (
+        <div className="tariff-modal">
+          <div className="tariff-modal-content">
+            <h2>{t("activeTariffModalTitle")}</h2>
+            <p>{t("activeTariff")}: {activeTariff.tariffName}</p>
+            <p>{t("statusLabel")}: <span className={`status-${activeTariff.status.toLowerCase()}`}>{activeTariff.status}</span></p>
+            <p>{t("endDate")}: {activeTariff.endDate}</p>
+            <button onClick={() => setShowTariffModal(false)}>{t("close")}</button>
+          </div>
         </div>
       )}
 
@@ -794,33 +903,60 @@ function App() {
               value={formData.dex}
               onChange={handleInputChange}
             />
-            <select name="strategy" value={formData.strategy} onChange={handleInputChange}>
-              <option value="">Select Market Making Strategy</option>
-              <option value="Inventory Management">Inventory Management</option>
-              <option value="Spread Optimization">Spread Optimization</option>
-              <option value="Volatility-Based Quoting">Volatility-Based Quoting</option>
-              <option value="Order Book Balancing">Order Book Balancing</option>
-              <option value="Dynamic Spread Adjustment">Dynamic Spread Adjustment</option>
-              <option value="Liquidity Provision">Liquidity Provision</option>
-              <option value="Price Pegging">Price Pegging</option>
-              <option value="High-Frequency Market Making">High-Frequency Market Making</option>
-              <option value="Cross-Exchange Arbitrage">Cross-Exchange Arbitrage</option>
-              <option value="Adaptive Market Making">Adaptive Market Making</option>
-            </select>
+            <div className="strategy-multi-select">
+              <div
+                className="strategy-select-display"
+                onClick={() => setIsStrategyOpen(!isStrategyOpen)}
+              >
+                {formData.strategy.length > 0
+                  ? formData.strategy.map((strat) => t(strategies.find(s => s.name === strat).key)).join(", ")
+                  : t("selectStrategies") + " *"}
+              </div>
+              {isStrategyOpen && (
+                <div className="strategy-options">
+                  {strategies.map((strategy) => (
+                    <div
+                      key={strategy.key}
+                      className={`strategy-option ${
+                        formData.strategy.includes(strategy.name) ? "selected" : ""
+                      }`}
+                      onClick={() => toggleStrategy(strategy.name)}
+                    >
+                      <span>{t(strategy.key)}</span>
+                      <p className="strategy-description">{t(strategy.descriptionKey)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <button onClick={handleSubmit}>{t("payButton")}</button>
             <div className="status">{status}</div>
           </div>
 
-          {walletConnected && paymentHistory.length > 0 && (
-            <div className="payment-history">
-              <h2>{t("paymentHistory")}</h2>
-              <ul>
-                {paymentHistory.map((payment, idx) => (
-                  <li key={idx}>
-                    {t("tariff")}: {tariffs[payment.tariffId - 1].name}, {t("amount")}: {payment.amount} USDT, {t("date")}: {payment.timestamp}
-                  </li>
-                ))}
-              </ul>
+          {walletConnected && (
+            <div className="client-dashboard">
+              <h2>{t("clientDashboard")}</h2>
+              {activeTariff ? (
+                <div className="active-tariff">
+                  <p>{t("activeTariff")}: {activeTariff.tariffName}</p>
+                  <p>{t("statusLabel")}: <span className={`status-${activeTariff.status.toLowerCase()}`}>{activeTariff.status}</span></p>
+                  <p>{t("endDate")}: {activeTariff.endDate}</p>
+                </div>
+              ) : (
+                <p>{t("noActiveTariff")}</p>
+              )}
+              {paymentHistory.length > 0 && (
+                <div className="payment-history">
+                  <h2>{t("paymentHistory")}</h2>
+                  <ul>
+                    {paymentHistory.map((payment, idx) => (
+                      <li key={idx}>
+                        {t("tariff")}: {tariffs[payment.tariffId - 1].name}, {t("amount")}: {payment.amount} USDT, {t("date")}: {payment.timestamp}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </Suspense>

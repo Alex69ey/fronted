@@ -2,12 +2,15 @@ const { override, addWebpackResolve, addWebpackPlugin } = require('customize-cra
 const webpack = require('webpack');
 
 const customAdjustments = (config) => {
-  const sourceMapLoader = config.module.rules.find(rule =>
-    rule.enforce === 'pre' && rule.use && rule.use.includes('source-map-loader')
-  );
-  if (sourceMapLoader) {
-    sourceMapLoader.exclude = [/node_modules\/@web3modal/];
-  }
+  // Отключаем source-map-loader, удаляя соответствующее правило
+  config.module.rules = config.module.rules.filter((rule) => {
+    return !(
+      rule.enforce === 'pre' &&
+      Array.isArray(rule.use) &&
+      rule.use.some((loader) => loader.loader === 'source-map-loader')
+    );
+  });
+
   return config;
 };
 

@@ -1,70 +1,58 @@
-# Getting Started with Create React App
+Описание проекта
+AlphaMarketMakerAi — это децентрализованное приложение (DApp), разработанное для автоматизации стратегий маркет-мейкинга на централизованных и децентрализованных биржах. Приложение предоставляет удобный интерфейс для выбора тарифов, безопасной оплаты через смарт-контракт с использованием токенов USDT, хранения зашифрованных данных пользователей, отображения истории платежей и поддержки мультиязычности (английский, русский, китайский) с адаптивным дизайном.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Установка и настройка
+Клонирование репозитория
+bash
 
-## Available Scripts
 
-In the project directory, you can run:
+git clone https://github.com/ваш_репозиторий/AlphaMarketMakerAi.git
+cd AlphaMarketMakerAi
+Установка зависимостей Убедитесь, что у вас установлен Node.js (версия 14.x или выше).
+bash
 
-### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+npm install
+Настройка окружения
+Создайте файл .env в корневой директории и добавьте переменные:
+text
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+REACT_APP_CONTRACT_ADDRESS=ВАШ_АДРЕС_КОНТРАКТА
+REACT_APP_NETWORK_ID=ВАШ_ID_СЕТИ (например, 1 для Ethereum Mainnet)
+Установите MetaMask и подключите кошелёк.
+Запуск приложения
+bash
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+npm start
+Приложение будет доступно по адресу http://localhost:3000.
+Технологии
+Solidity: Разработка смарт-контракта (AlphaMarketMakerAiPayment.sol, версия 0.8.0).
+React: Фронтенд с компонентами (Header, FormContainer, ClientDashboard, PaymentAnimation).
+ethers.js: Интеграция с блокчейном.
+Web3Modal: Подключение кошельков (MetaMask) и переключение сетей (Ethereum, BNB Smart Chain, Sepolia Testnet).
+Eth-crypto: Шифрование пользовательских данных.
+i18next: Поддержка мультиязычности.
+CSS-анимации и SVG: Визуализация графиков (свечи, полосы Боллинджера) и эффекты оплаты.
+OpenZeppelin: Проверенные контракты (IERC20, Ownable).
+Tsparticles: Фоновые эффекты.
+Структура смарт-контракта
+Тарифы: 13 тарифов (например, 552 USDT за 2 недели с 1 парой).
+Данные клиента: Хранение зашифрованных данных, временных меток и ID тарифов.
+Функции: payForService, withdrawUSDT, getTariff, getPaymentCount.
+Безопасность: Модификатор Ownable, проверки данных, использование transferFrom.
+Интеграция и тестирование
+Поддержка сетей: Ethereum Mainnet, BNB Smart Chain, Sepolia Testnet.
+Тестирование на Sepolia с MetaMask и Hardhat.
+Трудности и решения
+Анимация свечей: Исправлена синхронизация через CSS-классы.
+Шифрование: Данные преобразованы в hex-строку для контракта.
+Переключение сетей: Обработка ошибок Web3Modal (error.code === 4902).
+Результаты
+Функциональное DApp для выбора и оплаты тарифов.
+Адаптивный дизайн (от 375px до десктопов).
+Поддержка трёх языков и анимации.
+Безопасное хранение данных через смарт-контракт.
+Будущее развитие
+Добавление новых стратегий маркет-мейкинга.
+Улучшение UX.
+Развёртывание на mainnet.
